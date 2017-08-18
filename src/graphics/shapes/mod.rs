@@ -34,4 +34,13 @@ impl Graphic for Rect {
             }
         }
     }
+
+    fn get_position(&self) -> (usize, usize) {
+        (self.pos_x, self.pos_y)
+    }
+
+    fn set_position(&mut self, pos_x: usize, pos_y: usize) {
+        self.pos_x = pos_x;
+        self.pos_y = pos_y;
+    }
 }

@@ -1,14 +1,22 @@
 extern crate terminal_graphics;
+extern crate termion;
+
 use terminal_graphics::display::display::Display;
 use terminal_graphics::display::colour::Colour;
 use terminal_graphics::graphics;
 use terminal_graphics::graphics::shapes;
 use terminal_graphics::graphics::text::Text;
 
+use termion::event::Key;
+use termion::input::TermRead;
+use termion::raw::IntoRawMode;
+use std::io::{Write, stdout, stdin};
+
 use std::io;
 use std::io::Read;
 
 fn main() {
+
     let mut screen = Display::new(100,25);
     screen.clear();
 
@@ -20,7 +28,7 @@ fn main() {
     let mut graphics = graphics::Graphics::new();
 
     // create a rectangle
-    let rectangle = shapes::Rect::new(10, 4, 2,3,Colour::Magenta);
+    let mut rectangle = shapes::Rect::new(10, 4, 2,3,Colour::Magenta);
 
     // add the rectangle to the graphics
     graphics.add(Box::new(rectangle));
@@ -33,19 +41,27 @@ fn main() {
     text.set_text(String::from("Hello!"));
     graphics.add(Box::new(text));
 
+    graphics.draw(&mut screen);
+
     // read input from keyboard
-    let mut input = [0; 512];
-    loop {
-        match io::stdin().read(&mut input) {
-            Ok(n) => {
-                // create a new rectangle and add to the screen
-                let new_rect = shapes::Rect::new(15, 4, 2,3,Colour::Magenta);
-                graphics.add(Box::new(new_rect));
-                graphics.draw(&mut screen);
-            },
-            Err(e) => {
-                // nothing
-            },
+    let stdin = stdin();
+    let mut stdout = stdout().into_raw_mode().unwrap();
+    for c in stdin.keys() {
+        match c.unwrap() {
+            Key::Char('q') => break,
+            Key::Char(c) => println!("{}", c),
+            Key::Alt(c) => println!("^{}", c),
+            Key::Ctrl(c) => println!("*{}", c),
+            Key::Esc => println!("ESC"),
+            //Key::Left => graphics.move_graphic(1, -1, 0),
+            //Key::Right => graphics.move_graphic(1, 1, 0),
+            //Key::Up => graphics.move_graphic(1, 0, 1),
+            //Key::Down => graphics.move_graphic(1, 0, -1),
+            Key::Backspace => println!("×"),
+            _ => {}
         };
+        //graphics.draw(&mut screen);
+        print!("\x1b[");
+        stdout.flush().unwrap();
     }
 }
