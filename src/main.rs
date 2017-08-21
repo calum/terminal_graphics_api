@@ -28,7 +28,7 @@ fn main() {
     let mut graphics = graphics::Graphics::new();
 
     // create a rectangle
-    let mut rectangle = shapes::Rect::new(10, 4, 2,3,Colour::Magenta);
+    let mut rectangle = shapes::Rect::new(10, 4, 2, 3, Colour::Magenta);
 
     // add the rectangle to the graphics
     graphics.add(Box::new(rectangle));
@@ -49,19 +49,13 @@ fn main() {
     for c in stdin.keys() {
         match c.unwrap() {
             Key::Char('q') => break,
-            Key::Char(c) => println!("{}", c),
-            Key::Alt(c) => println!("^{}", c),
-            Key::Ctrl(c) => println!("*{}", c),
-            Key::Esc => println!("ESC"),
-            //Key::Left => graphics.move_graphic(1, -1, 0),
-            //Key::Right => graphics.move_graphic(1, 1, 0),
-            //Key::Up => graphics.move_graphic(1, 0, 1),
-            //Key::Down => graphics.move_graphic(1, 0, -1),
-            Key::Backspace => println!("×"),
+            Key::Left => graphics.move_graphic(0, -1, 0),
+            Key::Right => graphics.move_graphic(0, 1, 0),
+            Key::Down => graphics.move_graphic(0, 0, 1),
+            Key::Up => graphics.move_graphic(0, 0, -1),
             _ => {}
         };
-        //graphics.draw(&mut screen);
-        print!("\x1b[");
+        graphics.draw(&mut screen);
         stdout.flush().unwrap();
     }
 }

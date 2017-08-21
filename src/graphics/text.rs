@@ -3,8 +3,8 @@ use display::display::Display;
 use display::colour::Colour;
 
 pub struct Text {
-    pos_x: usize,
-    pos_y: usize,
+    pos_x: isize,
+    pos_y: isize,
     text: String,
     colour: Colour,
     background: Colour,
@@ -20,7 +20,7 @@ impl Text {
         }
     }
 
-    pub fn from(pos_x: usize, pos_y: usize, text: String, colour: Colour, background: Colour) -> Text {
+    pub fn from(pos_x: isize, pos_y: isize, text: String, colour: Colour, background: Colour) -> Text {
         Text {
             pos_x,
             pos_y,
@@ -47,11 +47,11 @@ impl Graphic for Text {
         }
     }
 
-    fn get_position(&self) -> (usize, usize) {
+    fn get_position(&self) -> (isize, isize) {
         (self.pos_x, self.pos_y)
     }
 
-    fn set_position(&mut self, pos_x: usize, pos_y: usize) {
+    fn set_position(&mut self, pos_x: isize, pos_y: isize) {
         self.pos_x = pos_x;
         self.pos_y = pos_y;
     }
