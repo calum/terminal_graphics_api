@@ -16,10 +16,20 @@ impl Display {
         }
     }
 
-    // set a pixel:
-    pub fn set_pixel(&mut self, x: usize, y: usize, character: char, colour: Colour, background: Colour) {
+    /// set a pixel
+    pub fn set_pixel(&mut self, x: isize, y: isize, character: char, colour: Colour, background: Colour) {
+        // check if (x,y) is within the bounds of the display
+        if
+            x < 0                            ||
+            x >= self.rows[0].len() as isize ||
+            y < 0                            ||
+            y >= self.rows.len() as isize
+        {
+            return
+        }
+
         // get the pixel:
-        let mut pixel = &mut self.rows[y][x];
+        let mut pixel = &mut self.rows[y as usize][x as usize];
 
         // set the properties for the pixel
         pixel.set_character(character);
@@ -27,7 +37,7 @@ impl Display {
         pixel.set_background(background);
     }
 
-    // Clears the display
+    /// Clears the display
     pub fn clear(&mut self) {
         for pixels in &mut self.rows {
             for mut pixel in pixels {
@@ -36,18 +46,25 @@ impl Display {
         }
     }
 
-    // Prints the display to the temrinal
+    /// Prints the display to the temrinal
     pub fn print(&self) {
-        // move the cursor to the top left corner:
-        print!("\x1b[{}A", self.rows.len());
+        // move the cursor to the top left corner
+        print!("\x1b[{}F", self.rows.len());
 
         for row in self.rows.iter() {
+            // print each pixel
             for pixel in row.iter() {
                 print!("{}", pixel.to_string());
             }
 
-            // start the next line:
-            print!("\n");
+            // erase the rest of the line
+            print!("\x1b[K");
+
+            // start the next line
+            print!("\x1b[1B");
+
+            // move to the start of the line
+            print!("\x1b[{}D", self.rows[0].len());
         }
     }
 }

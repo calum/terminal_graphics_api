@@ -4,15 +4,15 @@ use display::colour::Colour;
 
 // a rectangle
 pub struct Rect {
-    pos_x: usize,
-    pos_y: usize,
-    width: usize,
-    height: usize,
+    pos_x: isize,
+    pos_y: isize,
+    width: isize,
+    height: isize,
     colour: Colour,
 }
 
 impl Rect {
-    pub fn new(pos_x: usize, pos_y: usize, width: usize, height: usize, colour: Colour) -> Rect {
+    pub fn new(pos_x: isize, pos_y: isize, width: isize, height: isize, colour: Colour) -> Rect {
         Rect {
             pos_x,
             pos_y,
@@ -33,5 +33,14 @@ impl Graphic for Rect {
                 display.set_pixel(pixel_x, pixel_y, ' ', Colour::White, self.colour);
             }
         }
+    }
+
+    fn get_position(&self) -> (isize, isize) {
+        (self.pos_x, self.pos_y)
+    }
+
+    fn set_position(&mut self, pos_x: isize, pos_y: isize) {
+        self.pos_x = pos_x;
+        self.pos_y = pos_y;
     }
 }
