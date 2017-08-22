@@ -2,7 +2,7 @@ use graphics::Graphic;
 use display::display::Display;
 use display::colour::Colour;
 
-// a rectangle
+/// a rectangle
 pub struct Rect {
     pos_x: isize,
     pos_y: isize,
@@ -24,6 +24,7 @@ impl Rect {
 }
 
 impl Graphic for Rect {
+    /// Draw method for the Rectangle
     fn draw(&self, display: &mut Display) {
         // starting at (x,y), draw the rectangle onto the display
         let x = self.pos_x;

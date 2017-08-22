@@ -1,3 +1,9 @@
+//! The Graphic trait should be implemented by anything that
+//! you want to be drawn onto the terminal.
+//!
+//! After implementing the Graphic trait, a Graphic can be added
+//! to a Graphics structure.
+
 pub mod shapes;
 pub mod text;
 
@@ -14,7 +20,7 @@ pub trait Graphic {
     fn set_position(&mut self, pos_x: isize, pos_y: isize);
 
     fn move_position(&mut self, dx: isize, dy: isize) {
-        let (mut pos_x, mut pos_y) = self.get_position();
+        let (pos_x, pos_y) = self.get_position();
 
         self.set_position(
             pos_x+dx,

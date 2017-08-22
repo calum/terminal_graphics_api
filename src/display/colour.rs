@@ -1,4 +1,9 @@
-#[derive(Copy, Clone)]
+/// The Colour enum is used to set the colours in the Terminal
+///
+/// The available colours come from the ANSI_escape_codes
+/// <https://en.wikipedia.org/wiki/ANSI_escape_code#Colors>
+
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Colour {
     Black,
     Red,
@@ -11,6 +16,14 @@ pub enum Colour {
 }
 
 impl Colour {
+    /// Get the enum value from a string
+    ///
+    /// ```
+    /// use terminal_graphics::Colour;
+    ///
+    /// let black = Colour::of("Black");
+    /// assert_eq!(Colour::Black, black);
+    /// ```
     pub fn of(colour: &str) -> Colour {
         match colour {
             "Black" => Colour::Black,
@@ -27,6 +40,16 @@ impl Colour {
 
     /// Gets the values for the colour:
     /// from <https://en.wikipedia.org/wiki/ANSI_escape_code#Colors>
+    ///
+    /// ```
+    /// use terminal_graphics::Colour;
+    ///
+    /// let red = Colour::Red;
+    /// let (character_colour, background_colour) = red.get_codes();
+    ///
+    /// assert_eq!(character_colour, 31);
+    /// assert_eq!(background_colour, 41);
+    /// ```
     pub fn get_codes(&self) -> (u32, u32) {
         match *self {
             Colour::Black => (30, 40),

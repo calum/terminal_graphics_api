@@ -1,8 +1,13 @@
+//! # An example application
+//!
+//! Draws a rectangle onto the terminal and allows the user to move
+//! the rectangle with the arrow keys.
+
 extern crate terminal_graphics;
 extern crate termion;
 
-use terminal_graphics::display::display::Display;
-use terminal_graphics::display::colour::Colour;
+use terminal_graphics::Display;
+use terminal_graphics::Colour;
 use terminal_graphics::graphics;
 use terminal_graphics::graphics::shapes;
 use terminal_graphics::graphics::text::Text;
@@ -11,9 +16,6 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 use std::io::{Write, stdout, stdin};
-
-use std::io;
-use std::io::Read;
 
 fn main() {
 
@@ -28,7 +30,7 @@ fn main() {
     let mut graphics = graphics::Graphics::new();
 
     // create a rectangle
-    let mut rectangle = shapes::Rect::new(10, 4, 2, 3, Colour::Magenta);
+    let rectangle = shapes::Rect::new(10, 4, 2, 3, Colour::Magenta);
 
     // add the rectangle to the graphics
     graphics.add(Box::new(rectangle));
