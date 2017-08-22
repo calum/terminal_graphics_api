@@ -73,6 +73,17 @@ impl Graphics {
     pub fn add_named(&mut self, name: &str, graphic: Box<Graphic>) {
         self.add(graphic);
 
-        self.names.insert(name.to_string(), self.graphics.len());
+        self.names.insert(name.to_string(), self.graphics.len()-1);
+    }
+
+    /// get a reference to a graphic
+    pub fn get_named(&self, name: &str) -> Option<&Box<Graphic>> {
+        let index = self.names.get(name);
+
+        if let Some(&i) = index {
+            return Some(&self.graphics[i]);
+        } else {
+            return None;
+        }
     }
 }
