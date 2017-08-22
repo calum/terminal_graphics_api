@@ -87,7 +87,7 @@ fn main() {
         graphics.move_named_graphic("ball", ball_speed_x, ball_speed_y);
 
         // check for collisions:
-        
+        let mut ball: Option<&Box<Graphic>>  = graphics.get_named("ball");
 
         graphics.draw(&mut screen);
         stdout.flush().unwrap();
