@@ -50,8 +50,8 @@ impl Graphics {
     }
 
     /// move a graphic from its name
-    pub fn move_named_graphic(&mut self, name: &char, dx: isize, dy: isize) {
-        let index = self.get_index_from_name(name);
+    pub fn move_named_graphic(&mut self, name: &str, dx: isize, dy: isize) {
+        let index = self.names.get(name);
 
         if let Some(&i) = index {
             self.graphics[i].move_position(dx, dy);
@@ -64,14 +64,9 @@ impl Graphics {
     }
 
     /// Add a graphic with a name
-    pub fn add_named(&mut self, name: &char, graphic: Box<Graphic>) {
+    pub fn add_named(&mut self, name: &str, graphic: Box<Graphic>) {
         self.add(graphic);
 
-        self.names.insert(String::from(name), self.graphics.len());
+        self.names.insert(name.to_string(), self.graphics.len());
     }
-
-    fn get_index_from_name(&self, name: &char) -> Option<&usize> {
-        self.names.get(name)
-    }
-
 }
