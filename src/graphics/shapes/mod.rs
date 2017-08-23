@@ -2,6 +2,10 @@ use graphics::Graphic;
 use display::display::Display;
 use display::colour::Colour;
 
+pub mod ball;
+
+pub use self::ball::Ball as Ball;
+
 /// a rectangle
 pub struct Rect {
     pos_x: isize,
@@ -43,5 +47,17 @@ impl Graphic for Rect {
     fn set_position(&mut self, pos_x: isize, pos_y: isize) {
         self.pos_x = pos_x;
         self.pos_y = pos_y;
+    }
+
+    fn get_area(&self)  -> Vec<(isize, isize)>{
+        let mut area = Vec::new();
+
+        for x in self.pos_x..self.pos_x+self.width {
+            for y in self.pos_y..self.pos_y+self.height {
+                area.push((x, y));
+            }
+        }
+
+        area
     }
 }

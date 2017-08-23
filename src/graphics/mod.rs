@@ -19,6 +19,19 @@ pub trait Graphic {
 
     fn set_position(&mut self, pos_x: isize, pos_y: isize);
 
+    fn get_area(&self) -> Vec<(isize, isize)>{
+        vec![self.get_position()]
+    }
+
+    fn check_collision(&self, pos_x: isize, pos_y: isize) -> bool {
+        for &(x, y) in self.get_area().iter() {
+            if (x, y) == (pos_x, pos_y) {
+                return true;
+            }
+        }
+        false
+    }
+
     fn move_position(&mut self, dx: isize, dy: isize) {
         let (pos_x, pos_y) = self.get_position();
 
@@ -27,63 +40,52 @@ pub trait Graphic {
             pos_y+dy
         );
     }
+
+    fn update_speeds(&mut self, x: f32, y:f32) {}
+
+    fn update_position(&mut self) {}
 }
 
 pub struct Graphics {
-    graphics: Vec<Box<Graphic>>,
-    names: HashMap<String, usize>,
+    graphics: HashMap<String, Box<Graphic>>,
 }
 impl Graphics {
     pub fn new() -> Graphics {
         Graphics {
-            graphics: Vec::new(),
-            names: HashMap::new(),
+            graphics: HashMap::new(),
         }
     }
 
     /// draw all the graphics to the display
     pub fn draw(&self, display: &mut Display) {
         display.clear();
-        for graphic in self.graphics.iter() {
+        for (_, graphic) in self.graphics.iter() {
             graphic.draw(display);
         }
         display.print();
     }
 
-    /// move a graphic
-    pub fn move_graphic(&mut self, index: usize, dx: isize, dy: isize) {
-        self.graphics[index].move_position(dx, dy);
-    }
-
     /// move a graphic from its name
     pub fn move_named_graphic(&mut self, name: &str, dx: isize, dy: isize) {
-        let index = self.names.get(name);
-
-        if let Some(&i) = index {
-            self.graphics[i].move_position(dx, dy);
-        }
-    }
-
-    /// add another graphic object to the graphics vector
-    pub fn add(&mut self, graphic: Box<Graphic>) {
-        self.graphics.push(graphic);
+        self.get_mut_named(name).unwrap().move_position(dx, dy);
     }
 
     /// Add a graphic with a name
     pub fn add_named(&mut self, name: &str, graphic: Box<Graphic>) {
-        self.add(graphic);
+        self.graphics.insert(name.to_string(), graphic);
+    }
 
-        self.names.insert(name.to_string(), self.graphics.len()-1);
+    /// get a mutable reference to a graphic
+    pub fn get_mut_named(&mut self, name: &str) -> Option<&mut Box<Graphic>> {
+        self.graphics.get_mut(name)
     }
 
     /// get a reference to a graphic
     pub fn get_named(&self, name: &str) -> Option<&Box<Graphic>> {
-        let index = self.names.get(name);
+        self.graphics.get(name)
+    }
 
-        if let Some(&i) = index {
-            return Some(&self.graphics[i]);
-        } else {
-            return None;
-        }
+    pub fn remove_named(&mut self, name: &str) {
+        let _ = self.graphics.remove(name);
     }
 }
