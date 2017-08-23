@@ -9,5 +9,5 @@ license = "MIT/Apache-2.0"
 description = "A basic graphics api for the terminal with an example application."
 
 [dependencies]
-termion = "*"
-rand = "*"
+termion = "1.5.1"
+rand = "0.3"
