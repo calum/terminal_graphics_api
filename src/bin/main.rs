@@ -77,8 +77,12 @@ fn main() {
     let mut rng = rand::thread_rng();
 
     // the update loop
+    let frame_time = 1;
     let mut running = true;
     while running {
+        // get the time:
+        let start = std::time::Instant::now();
+
         // handle user inputs:
         for c in rx.try_iter() {
             match c.unwrap() {
@@ -140,6 +144,12 @@ fn main() {
 
         graphics.draw(&mut screen);
         stdout.flush().unwrap();
+
+        let elapsed = start.elapsed().subsec_nanos();
+        if elapsed < 40000000 {
+            let sleep_time = frame_time*40000000 - elapsed;
+            thread::sleep(std::time::Duration::new(0, sleep_time));
+        }
     }
 
 }
