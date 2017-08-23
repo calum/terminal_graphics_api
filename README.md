@@ -5,4 +5,4 @@ A simple Graphics API for use in a linux terminal.
 
 ## Example application using the API
 For an example application, try ```$ cargo run```.
-![example_gif](assets/example.gif)
+![example_terminal game](assets/terminal_game.gif)
