@@ -6,6 +6,7 @@ readme = "README.md"
 keywords = ["terminal", "graphics", "api"]
 repository = "https://github.com/calum/terminal_graphics_api"
 license = "MIT/Apache-2.0"
+description = "A basic graphics api for the terminal with an example application."
 
 [dependencies]
 termion = "*"
