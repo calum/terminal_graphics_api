@@ -38,6 +38,44 @@ impl Colour {
         }
     }
 
+    /// Get the enum value from an RGB value.
+    /// The implementation needs improving.
+    ///
+    /// ```
+    /// use terminal_graphics::Colour;
+    ///
+    /// assert_eq!(Colour::Black, Colour::from_rgb(0,0,0));
+    /// assert_eq!(Colour::White, Colour::from_rgb(255,255,255));
+    /// assert_eq!(Colour::Magenta, Colour::from_rgb(255,0,255));
+    /// ```
+    pub fn from_rgb(red: u8, green: u8, blue: u8) -> Colour {
+        // round the values:
+        let mut red_rounded = 0;
+        let mut green_rounded = 0;
+        let mut blue_rounded = 0;
+        if red > 127 {
+            red_rounded = 255;
+        }
+        if green > 127 {
+            green_rounded = 255;
+        }
+        if blue > 127 {
+            blue_rounded = 255;
+        }
+
+        match (red_rounded, green_rounded, blue_rounded) {
+            (0, 0, 0) => Colour::Black,
+            (255, 255, 255) => Colour::White,
+            (_, 0, 0) => Colour::Red,
+            (0, _, 0) => Colour::Green,
+            (0, 0, _) => Colour::Blue,
+            (_, _, 0) => Colour::Green,
+            (_, 0, _) => Colour::Magenta,
+            (0, _, _) => Colour::Cyan,
+            (_, _, _) => Colour::White,
+        }
+    }
+
     /// Gets the values for the colour:
     /// from <https://en.wikipedia.org/wiki/ANSI_escape_code#Colors>
     ///
