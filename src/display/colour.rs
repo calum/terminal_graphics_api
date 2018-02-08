@@ -115,13 +115,20 @@ impl Colour {
     pub fn from_rgb(red: u8, green: u8, blue: u8) -> Colour {
 
         let mut closest = Colour::Black;
-        let mut distance: f64 = 255.00;
+        let mut distance: f64 = 1000.00;
 
         for colour in Colour::variants().iter() {
             // find the distance between this rbg value and the colour
             let (r, g, b) = colour.get_rbg();
-            println!("{}, {}, {}", r, g, b);
-            let this_distance = (((r + red) as f64).powi(2) + ((g + green) as f64).powi(2) + ((b + blue) as f64).powi(2)).sqrt();
+            let red_1 = r as f64;
+            let blue_1 = b as f64;
+            let green_1 = g as f64;
+            let red_2 = red as f64;
+            let blue_2 = blue as f64;
+            let green_2 = green as f64;
+            let this_distance = ((red_1 - red_2).powi(2) +
+                                (green_1 - green_2).powi(2) +
+                                (blue_1 - blue_2).powi(2)).sqrt();
             if this_distance < distance {
                 closest = Colour::of(colour.to_str());
                 distance = this_distance;
