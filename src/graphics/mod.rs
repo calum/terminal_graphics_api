@@ -41,7 +41,7 @@ pub trait Graphic {
         );
     }
 
-    fn update_speeds(&mut self, x: f32, y:f32) {}
+    fn update_speeds(&mut self, _x: f32, _y:f32) {}
 
     fn update_position(&mut self) {}
 }

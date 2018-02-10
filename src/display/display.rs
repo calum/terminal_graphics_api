@@ -29,7 +29,7 @@ impl Display {
         }
 
         // get the pixel:
-        let mut pixel = &mut self.rows[y as usize][x as usize];
+        let pixel = &mut self.rows[y as usize][x as usize];
 
         // set the properties for the pixel
         pixel.set_character(character);
