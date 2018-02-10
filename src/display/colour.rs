@@ -110,7 +110,7 @@ impl Colour {
     ///
     /// assert_eq!(Colour::Black, Colour::from_rgb(0,0,0));
     /// assert_eq!(Colour::BrightWhite, Colour::from_rgb(255,255,255));
-    /// assert_eq!(Colour::BrightGreen, Colour::from_rgb(85, 255, 85));
+    /// assert_eq!(Colour::BrightGreen, Colour::from_rgb(0, 255, 0));
     /// ```
     pub fn from_rgb(red: u8, green: u8, blue: u8) -> Colour {
 
@@ -176,12 +176,12 @@ impl Colour {
     /// ```
     /// use terminal_graphics::Colour;
     ///
-    /// let red = Colour::Cyan;
-    /// let (r, b, g) = red.get_rbg();
+    /// let cyan = Colour::Cyan;
+    /// let (r, b, g) = cyan.get_rbg();
     ///
     /// assert_eq!(r, 0);
-    /// assert_eq!(b, 170);
-    /// assert_eq!(g, 170);
+    /// assert_eq!(b, 128);
+    /// assert_eq!(g, 128);
     /// ```
     pub fn get_rbg(&self) -> (u8, u8, u8) {
         match *self {
