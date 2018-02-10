@@ -1,6 +1,6 @@
 [package]
 name = "terminal_graphics"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["calum"]
 readme = "README.md"
 keywords = ["terminal", "graphics", "api"]
