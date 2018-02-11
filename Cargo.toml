@@ -1,13 +1,9 @@
 [package]
 name = "terminal_graphics"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["calum"]
 readme = "README.md"
 keywords = ["terminal", "graphics", "api"]
 repository = "https://github.com/calum/terminal_graphics_api"
 license = "MIT/Apache-2.0"
 description = "A basic graphics api for the terminal with an example application."
-
-[dependencies]
-termion = "1.5.1"
-rand = "0.3"
