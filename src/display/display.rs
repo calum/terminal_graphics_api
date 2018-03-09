@@ -37,6 +37,11 @@ impl Display {
         pixel.set_background(background);
     }
 
+    /// get a mutable reference to a pixel at position (x, y)
+    pub fn get_mut_pixel(&mut self, x: isize, y: isize) -> &mut Pixel {
+        &mut self.rows[y as usize][x as usize]
+    }
+
     /// Clears the display
     pub fn clear(&mut self) {
         for pixels in &mut self.rows {

@@ -6,6 +6,7 @@
 
 pub mod shapes;
 pub mod text;
+pub mod container;
 
 use display::display::Display;
 
