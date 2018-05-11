@@ -8,6 +8,6 @@ For example applications, try [termage](https://github.com/calum/terminal_image_
 
 ### Example Gifs
 
-![example_terminal game](assets/terminal_game.gif)
+![example_terminal game](https://raw.githubusercontent.com/calum/terminal_graphics_api/master/assets/terminal_game.gif)
 
-![ferris in the terminal](assets/ferris_crab.png)
+![ferris in the terminal](https://raw.githubusercontent.com/calum/terminal_graphics_api/master/assets/ferris_crab.png)
