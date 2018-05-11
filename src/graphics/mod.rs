@@ -4,9 +4,9 @@
 //! After implementing the Graphic trait, a Graphic can be added
 //! to a Graphics structure.
 
+pub mod container;
 pub mod shapes;
 pub mod text;
-pub mod container;
 
 use display::display::Display;
 
@@ -20,7 +20,7 @@ pub trait Graphic {
 
     fn set_position(&mut self, pos_x: isize, pos_y: isize);
 
-    fn get_area(&self) -> Vec<(isize, isize)>{
+    fn get_area(&self) -> Vec<(isize, isize)> {
         vec![self.get_position()]
     }
 
@@ -36,13 +36,10 @@ pub trait Graphic {
     fn move_position(&mut self, dx: isize, dy: isize) {
         let (pos_x, pos_y) = self.get_position();
 
-        self.set_position(
-            pos_x+dx,
-            pos_y+dy
-        );
+        self.set_position(pos_x + dx, pos_y + dy);
     }
 
-    fn update_speeds(&mut self, _x: f32, _y:f32) {}
+    fn update_speeds(&mut self, _x: f32, _y: f32) {}
 
     fn update_position(&mut self) {}
 }

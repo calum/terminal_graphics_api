@@ -1,6 +1,6 @@
-use graphics::Graphic;
-use display::display::Display;
 use display::colour::Colour;
+use display::display::Display;
+use graphics::Graphic;
 
 pub struct Ball {
     pos_x: f32,
@@ -27,7 +27,7 @@ impl Graphic for Ball {
         let x = self.pos_x.round() as isize;
         let y = self.pos_y.round() as isize;
         display.set_pixel(x, y, ' ', Colour::White, self.colour);
-        display.set_pixel(x+1, y, ' ', Colour::White, self.colour);
+        display.set_pixel(x + 1, y, ' ', Colour::White, self.colour);
     }
 
     fn get_position(&self) -> (isize, isize) {
@@ -39,13 +39,13 @@ impl Graphic for Ball {
         self.pos_y = pos_y as f32;
     }
 
-    fn get_area(&self)  -> Vec<(isize, isize)>{
+    fn get_area(&self) -> Vec<(isize, isize)> {
         let (pos_x, pos_y) = self.get_position();
 
-        vec![(pos_x, pos_y), (pos_x+1, pos_y)]
+        vec![(pos_x, pos_y), (pos_x + 1, pos_y)]
     }
 
-    fn update_speeds(&mut self, x: f32, y:f32) {
+    fn update_speeds(&mut self, x: f32, y: f32) {
         self.speed_x *= x;
         self.speed_y *= y;
     }

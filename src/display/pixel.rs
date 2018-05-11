@@ -35,10 +35,10 @@ impl Pixel {
 
     // clear all the values to defaults
     pub fn clear(&mut self) {
-        *self = Pixel{
+        *self = Pixel {
             character: ' ',
             colour: Colour::Black,
-            background: Colour::White
+            background: Colour::White,
         };
     }
 

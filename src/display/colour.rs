@@ -40,7 +40,7 @@ impl Colour {
             "Yellow" => Colour::Yellow,
             "Blue" => Colour::Blue,
             "Magenta" => Colour::Magenta,
-            "Cyan"  => Colour::Cyan,
+            "Cyan" => Colour::Cyan,
             "White" => Colour::White,
             "BrightBlack" => Colour::BrightBlack,
             "BrightRed" => Colour::BrightRed,
@@ -48,9 +48,9 @@ impl Colour {
             "BrightYellow" => Colour::BrightYellow,
             "BrightBlue" => Colour::BrightBlue,
             "BrightMagenta" => Colour::BrightMagenta,
-            "BrightCyan"  => Colour::BrightCyan,
+            "BrightCyan" => Colour::BrightCyan,
             "BrightWhite" => Colour::BrightWhite,
-            _   => Colour::White,
+            _ => Colour::White,
         }
     }
 
@@ -84,22 +84,24 @@ impl Colour {
     /// assert_eq!(Colour::variants().len(), 16);
     /// ```
     pub fn variants() -> [Colour; 16] {
-        [Colour::Black,
-        Colour::Red,
-        Colour::Green,
-        Colour::Yellow,
-        Colour::Blue,
-        Colour::Magenta,
-        Colour::Cyan,
-        Colour::White,
-        Colour::BrightBlack,
-        Colour::BrightRed,
-        Colour::BrightGreen,
-        Colour::BrightYellow,
-        Colour::BrightBlue,
-        Colour::BrightMagenta,
-        Colour::BrightCyan,
-        Colour::BrightWhite]
+        [
+            Colour::Black,
+            Colour::Red,
+            Colour::Green,
+            Colour::Yellow,
+            Colour::Blue,
+            Colour::Magenta,
+            Colour::Cyan,
+            Colour::White,
+            Colour::BrightBlack,
+            Colour::BrightRed,
+            Colour::BrightGreen,
+            Colour::BrightYellow,
+            Colour::BrightBlue,
+            Colour::BrightMagenta,
+            Colour::BrightCyan,
+            Colour::BrightWhite,
+        ]
     }
 
     /// Get the enum value from an RGB value.
@@ -113,7 +115,6 @@ impl Colour {
     /// assert_eq!(Colour::BrightGreen, Colour::from_rgb(0, 255, 0));
     /// ```
     pub fn from_rgb(red: u8, green: u8, blue: u8) -> Colour {
-
         let mut closest = Colour::Black;
         let mut distance: f64 = 1000.00;
 
@@ -126,9 +127,9 @@ impl Colour {
             let red_2 = red as f64;
             let blue_2 = blue as f64;
             let green_2 = green as f64;
-            let this_distance = ((red_1 - red_2).powi(2) +
-                                (green_1 - green_2).powi(2) +
-                                (blue_1 - blue_2).powi(2)).sqrt();
+            let this_distance = ((red_1 - red_2).powi(2) + (green_1 - green_2).powi(2)
+                + (blue_1 - blue_2).powi(2))
+                .sqrt();
             if this_distance < distance {
                 closest = Colour::of(colour.to_str());
                 distance = this_distance;

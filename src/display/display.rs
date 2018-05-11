@@ -11,21 +11,21 @@ impl Display {
         for _ in 0..size_y {
             rows.push(Pixel::generate_pixels(size_x));
         }
-        Display {
-            rows
-        }
+        Display { rows }
     }
 
     /// set a pixel
-    pub fn set_pixel(&mut self, x: isize, y: isize, character: char, colour: Colour, background: Colour) {
+    pub fn set_pixel(
+        &mut self,
+        x: isize,
+        y: isize,
+        character: char,
+        colour: Colour,
+        background: Colour,
+    ) {
         // check if (x,y) is within the bounds of the display
-        if
-            x < 0                            ||
-            x >= self.rows[0].len() as isize ||
-            y < 0                            ||
-            y >= self.rows.len() as isize
-        {
-            return
+        if x < 0 || x >= self.rows[0].len() as isize || y < 0 || y >= self.rows.len() as isize {
+            return;
         }
 
         // get the pixel:

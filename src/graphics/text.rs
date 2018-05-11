@@ -1,6 +1,6 @@
-use graphics::Graphic;
-use display::display::Display;
 use display::colour::Colour;
+use display::display::Display;
+use graphics::Graphic;
 
 pub struct Text {
     pos_x: isize,
@@ -20,7 +20,13 @@ impl Text {
         }
     }
 
-    pub fn from(pos_x: isize, pos_y: isize, text: String, colour: Colour, background: Colour) -> Text {
+    pub fn from(
+        pos_x: isize,
+        pos_y: isize,
+        text: String,
+        colour: Colour,
+        background: Colour,
+    ) -> Text {
         Text {
             pos_x,
             pos_y,
@@ -42,7 +48,7 @@ impl Graphic for Text {
 
         let mut index = 0;
         for character in text.chars() {
-            display.set_pixel(x+index, y, character, self.colour, self.background);
+            display.set_pixel(x + index, y, character, self.colour, self.background);
             index += 1;
         }
     }

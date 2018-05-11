@@ -1,6 +1,6 @@
-use graphics::Graphic;
-use display::display::Display;
 use display::colour::Colour;
+use display::display::Display;
+use graphics::Graphic;
 
 /// The Container graphic can be placed
 /// anywhere in the Display and holds
@@ -28,12 +28,20 @@ impl<'a> Container<'a> {
             height: 10,
             content: None,
             border: Colour::Black,
-            background: Colour::White
+            background: Colour::White,
         }
     }
 
     /// Create a Container
-    pub fn from(pos_x: isize, pos_y: isize, width: isize, height: isize, graphic: &'a mut Graphic, border: Colour, background: Colour) -> Container {
+    pub fn from(
+        pos_x: isize,
+        pos_y: isize,
+        width: isize,
+        height: isize,
+        graphic: &'a mut Graphic,
+        border: Colour,
+        background: Colour,
+    ) -> Container {
         let (x, y) = graphic.get_position();
 
         // move relative to the container
@@ -82,8 +90,8 @@ impl<'a> Graphic for Container<'a> {
         let border = self.border;
 
         // set the background colour
-        for i in x..x+width {
-            for j in y..y+height {
+        for i in x..x + width {
+            for j in y..y + height {
                 let pixel = display.get_mut_pixel(i, j);
                 pixel.set_background(background);
             }
@@ -94,17 +102,17 @@ impl<'a> Graphic for Container<'a> {
         }
 
         // Draw the border
-        display.set_pixel(x, y+height, '└', border, background);
+        display.set_pixel(x, y + height, '└', border, background);
         display.set_pixel(x, y, '┌', border, background);
-        display.set_pixel(x+width, y+height, '┘', border, background);
-        display.set_pixel(x+width, y, '┐', border, background);
+        display.set_pixel(x + width, y + height, '┘', border, background);
+        display.set_pixel(x + width, y, '┐', border, background);
         for i in 1..width {
-            display.set_pixel(x+i, y+height, '─', border, background);
-            display.set_pixel(x+i, y, '─', border, background);
+            display.set_pixel(x + i, y + height, '─', border, background);
+            display.set_pixel(x + i, y, '─', border, background);
         }
         for i in 1..height {
-            display.set_pixel(x, y+i, '│', border, background);
-            display.set_pixel(x+width, y+i, '│', border, background);
+            display.set_pixel(x, y + i, '│', border, background);
+            display.set_pixel(x + width, y + i, '│', border, background);
         }
     }
 
