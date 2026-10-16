@@ -44,7 +44,7 @@ cargo llvm-cov --fail-under-lines 90            # coverage gate (CI)
 - `src/display/` - `Colour`, `Pixel`, `Display` (the terminal buffer + ANSI output)
 - `src/graphics/` - `Graphic` trait, `Graphics` collection, `Container`, `Text`,
   `shapes/` (`Rect`, `Ball`)
-- `examples/demo.rs` - demo (`cargo run --example demo`)
+- `examples/demo.rs` - animated showcase of every feature (`cargo run --example demo`; `-- --frames N --no-delay` for tests)
 - `tests/` - integration, e2e and repo-hygiene tests
 
 ## Conventions

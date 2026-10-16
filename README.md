@@ -31,7 +31,7 @@ cd terminal_graphics_api
 cargo run --example demo
 ```
 
-The demo draws a titled box to the terminal. Its source is in [`examples/demo.rs`](examples/demo.rs).
+The demo is a ~10 second animated tour of the whole library: a custom `Graphic` (plasma) in a `Container`, bouncing `Ball`s with `check_collision` in a `Graphics` collection, the 16-colour palette, `from_rgb` gradients, clipped scrolling `Text`, and live stats. Pass `-- --frames N` to change the length. Its source is in [`examples/demo.rs`](examples/demo.rs).
 
 ## Your first program
 
