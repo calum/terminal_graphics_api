@@ -1,6 +1,6 @@
 [package]
 name = "terminal_graphics"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["calum"]
 edition = "2021"
 readme = "README.md"
