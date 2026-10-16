@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.0
 
 - Faster rendering: `Display::render` now sets colours only when they change
   along a row, resets them at the end of each row, and preallocates its output.
