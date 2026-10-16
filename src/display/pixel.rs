@@ -1,8 +1,15 @@
 use crate::display::colour::Colour;
 use std::fmt;
 
+/// A list of pixels, used for one row of a [`Display`](crate::display::display::Display).
 pub type Pixels = Vec<Pixel>;
 
+/// One cell of the terminal grid: a character, a foreground colour and a
+/// background colour.
+///
+/// A `Pixel` is a single character cell, so one pixel is one column wide and
+/// one row high in the terminal. Pixels are normally reached through
+/// [`Display`](crate::display::display::Display), not created directly.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Pixel {
     character: char,
@@ -11,7 +18,14 @@ pub struct Pixel {
 }
 
 impl Pixel {
-    // Generates a new pixel
+    /// Creates a new pixel with the given character and colours.
+    ///
+    /// ```
+    /// use terminal_graphics::{Colour, display::pixel::Pixel};
+    ///
+    /// let pixel = Pixel::new('#', Colour::Red, Colour::Black);
+    /// assert_eq!(pixel.character(), '#');
+    /// ```
     pub fn new(character: char, colour: Colour, background: Colour) -> Pixel {
         Pixel {
             character,
@@ -20,51 +34,69 @@ impl Pixel {
         }
     }
 
+    /// Returns the character shown in this cell.
     pub fn character(&self) -> char {
         self.character
     }
 
+    /// Returns the foreground colour, which is the colour of the character.
     pub fn colour(&self) -> Colour {
         self.colour
     }
 
+    /// Returns the background colour, which fills the cell behind the character.
     pub fn background(&self) -> Colour {
         self.background
     }
 
-    // set the character
+    /// Sets the character shown in this cell.
     pub fn set_character(&mut self, character: char) {
         self.character = character;
     }
 
-    // set the colour
+    /// Sets the foreground colour, which is the colour of the character.
     pub fn set_colour(&mut self, colour: Colour) {
         self.colour = colour;
     }
 
-    // set the background
+    /// Sets the background colour, which fills the cell behind the character.
     pub fn set_background(&mut self, background: Colour) {
         self.background = background;
     }
 
-    // clear all the values to defaults
+    /// Resets the pixel to its default: a black space on a white background.
+    ///
+    /// ```
+    /// use terminal_graphics::{Colour, display::pixel::Pixel};
+    ///
+    /// let mut pixel = Pixel::new('#', Colour::Red, Colour::Blue);
+    /// pixel.clear();
+    /// assert_eq!(pixel, Pixel::default());
+    /// ```
     pub fn clear(&mut self) {
         *self = Pixel::default();
     }
 
-    // Generates a Pixels object
+    /// Creates a row of `size` default pixels.
+    ///
+    /// A size of 0 returns an empty list. This never panics.
     pub fn generate_pixels(size: u32) -> Pixels {
         vec![Pixel::default(); size as usize]
     }
 }
 
+/// The default pixel is a black space on a white background.
 impl Default for Pixel {
     fn default() -> Pixel {
         Pixel::new(' ', Colour::Black, Colour::White)
     }
 }
 
-/// Formats the pixel as an ANSI escape sequence followed by its character.
+/// Formats the pixel as one cell of ANSI output: an escape sequence that sets
+/// the foreground and background colours, the character, then a reset.
+///
+/// This is what [`Display::render`](crate::display::display::Display::render)
+/// writes for each cell.
 impl fmt::Display for Pixel {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let (colour, _) = self.colour.get_codes();
