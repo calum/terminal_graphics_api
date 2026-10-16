@@ -19,6 +19,18 @@ impl Display {
         }
     }
 
+    /// Returns the display size as `(width, height)`, in pixels
+    ///
+    /// ```
+    /// use terminal_graphics::display::display::Display;
+    ///
+    /// let display = Display::new(7, 3);
+    /// assert_eq!(display.size(), (7, 3));
+    /// ```
+    pub fn size(&self) -> (u32, u32) {
+        (self.width as u32, self.rows.len() as u32)
+    }
+
     /// set a pixel; coordinates outside the display are ignored
     pub fn set_pixel(
         &mut self,
@@ -178,6 +190,26 @@ mod tests {
     #[test]
     fn zero_width_rows_render_without_a_cursor_move_left() {
         assert!(!Display::new(0, 2).render().contains('D'));
+    }
+
+    #[test]
+    fn size_returns_width_and_height() {
+        assert_eq!(Display::new(7, 3).size(), (7, 3));
+    }
+
+    #[test]
+    fn size_of_zero_by_zero_display_is_zero() {
+        assert_eq!(Display::new(0, 0).size(), (0, 0));
+    }
+
+    #[test]
+    fn size_of_display_with_no_rows_keeps_width() {
+        assert_eq!(Display::new(5, 0).size(), (5, 0));
+    }
+
+    #[test]
+    fn size_of_display_with_no_columns_keeps_height() {
+        assert_eq!(Display::new(0, 4).size(), (0, 4));
     }
 
     #[test]
