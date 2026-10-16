@@ -35,3 +35,43 @@ jobs:
           components: llvm-tools-preview
       - uses: taiki-e/install-action@cargo-llvm-cov
       - run: cargo llvm-cov --fail-under-lines 90
+
+  # Publishes to crates.io when master has a version that is not yet released.
+  # To release: bump `version` in Cargo.toml in your PR. Merges that leave the
+  # version unchanged skip publishing, so this never fails on re-runs.
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs: [test, coverage]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Check whether this version is already published
+        id: version
+        run: |
+          name=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].name')
+          version=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
+          status=$(curl -s -o /dev/null -w '%{http_code}' -A "$name-ci (github.com/${{ github.repository }})" \
+            "https://crates.io/api/v1/crates/$name/$version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "$status" = "200" ]; then
+            echo "$name $version is already on crates.io, skipping"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          elif [ "$status" = "404" ]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "unexpected crates.io status $status" >&2
+            exit 1
+          fi
+      - name: Publish
+        if: steps.version.outputs.publish == 'true'
+        run: cargo publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - name: Tag release
+        if: steps.version.outputs.publish == 'true'
+        run: |
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
