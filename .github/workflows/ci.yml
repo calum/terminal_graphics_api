@@ -25,6 +25,9 @@ jobs:
       - run: cargo clippy --all-targets
       - run: cargo test --all-targets
       - run: cargo test --doc
+      - run: cargo doc --no-deps
+        env:
+          RUSTDOCFLAGS: -D warnings
 
   coverage:
     runs-on: ubuntu-latest
