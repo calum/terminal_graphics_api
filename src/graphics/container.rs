@@ -2,13 +2,54 @@ use crate::display::colour::Colour;
 use crate::display::display::Display;
 use crate::graphics::Graphic;
 
-/// The Container graphic can be placed
-/// anywhere in the Display and holds
-/// a Graphic.
+/// A box that can be placed anywhere on the display. It fills a rectangle
+/// with a background colour, draws a border around it and holds one
+/// [`Graphic`] as its content.
 ///
-/// A Graphic within the container is drawn
-/// in the coordinates relative to the
-/// container.
+/// # Position and size
+///
+/// - The position is the top-left cell of the filled background, in display
+///   cells.
+/// - `width` and `height` are the size of the filled background, in cells.
+///   The border is drawn at `x + width` and `y + height`, so it sits one cell
+///   beyond the filled background on the right and bottom.
+///
+/// # Content
+///
+/// The content's coordinates are relative to the container. A content at
+/// `(0, 0)` is drawn at the container's top-left cell. When content is added
+/// with [`Container::from`] or [`Container::set_content`], its position is
+/// moved by the container's position, so afterwards its `get_position` returns
+/// the absolute position.
+///
+/// # Drawing
+///
+/// The background is painted first, then the content, then the border. The
+/// border therefore covers any content that reaches the edge. The border uses
+/// the box-drawing characters `┌` (top-left), `┐` (top-right), `└`
+/// (bottom-left), `┘` (bottom-right), `─` (horizontal edges) and `│` (vertical
+/// edges).
+///
+/// Cells outside the display are clipped.
+///
+/// # Example
+///
+/// ```
+/// use terminal_graphics::graphics::Graphic;
+/// use terminal_graphics::{Colour, Container, Display, Text};
+///
+/// // the text is at (1, 1) relative to the container
+/// let mut text = Text::from(1, 1, String::from("hi"), Colour::Red, Colour::Black);
+/// let container = Container::from(2, 1, 6, 3, &mut text, Colour::Blue, Colour::Green);
+///
+/// let mut display = Display::new(10, 6);
+/// container.draw(&mut display);
+///
+/// // (2 + 1, 1 + 1) is the absolute position of the 'h'
+/// assert_eq!(display.pixel_mut(3, 2).unwrap().character(), 'h');
+/// // the border's top-left corner is at the container's position
+/// assert_eq!(display.pixel_mut(2, 1).unwrap().character(), '┌');
+/// ```
 pub struct Container<'a> {
     pos_x: isize,
     pos_y: isize,
@@ -19,7 +60,8 @@ pub struct Container<'a> {
     background: Colour,
 }
 impl<'a> Container<'a> {
-    /// Create an empty Container
+    /// Creates an empty container at `(0, 0)`, 10 cells wide and 10 cells
+    /// high, with a black border, a white background and no content.
     pub fn new() -> Container<'a> {
         Container {
             pos_x: 0,
@@ -32,7 +74,19 @@ impl<'a> Container<'a> {
         }
     }
 
-    /// Create a Container
+    /// Creates a container holding `graphic` as its content.
+    ///
+    /// - `pos_x`, `pos_y`: top-left cell of the container, in display cells.
+    /// - `width`, `height`: size of the filled background, in cells. The
+    ///   border sits one cell beyond these.
+    /// - `graphic`: the content. Its current position is taken as relative to
+    ///   the container, and it is moved to the absolute position
+    ///   `(pos_x + x, pos_y + y)`.
+    /// - `border`: colour of the border characters.
+    /// - `background`: colour of the filled cells.
+    ///
+    /// Zero or negative sizes are allowed; they draw less (or nothing) rather
+    /// than panicking.
     pub fn from(
         pos_x: isize,
         pos_y: isize,
@@ -59,6 +113,10 @@ impl<'a> Container<'a> {
         }
     }
 
+    /// Replaces the content with `graphic`, replacing any previous content.
+    ///
+    /// As with [`Container::from`], the graphic's current position is taken as
+    /// relative to the container and moved to the absolute position.
     pub fn set_content(&mut self, graphic: &'a mut dyn Graphic) {
         let (x, y) = graphic.get_position();
 
@@ -68,19 +126,25 @@ impl<'a> Container<'a> {
         self.content = Some(graphic);
     }
 
+    /// Sets the colour of the filled cells.
     pub fn set_background(&mut self, background: Colour) {
         self.background = background;
     }
 
+    /// Sets the width of the filled background, in cells. The border is drawn
+    /// one cell beyond it.
     pub fn set_width(&mut self, width: isize) {
         self.width = width;
     }
 
+    /// Sets the height of the filled background, in cells. The border is drawn
+    /// one cell beyond it.
     pub fn set_height(&mut self, height: isize) {
         self.height = height;
     }
 }
 impl<'a> Graphic for Container<'a> {
+    /// Draws the background, then the content, then the border.
     fn draw(&self, display: &mut Display) {
         let x = self.pos_x;
         let y = self.pos_y;
@@ -121,12 +185,15 @@ impl<'a> Graphic for Container<'a> {
         (self.pos_x, self.pos_y)
     }
 
+    /// Moves the top-left cell of the container. The content is not moved
+    /// with it, so its absolute position is unchanged.
     fn set_position(&mut self, pos_x: isize, pos_y: isize) {
         self.pos_x = pos_x;
         self.pos_y = pos_y;
     }
 }
 
+/// Equivalent to [`Container::new`].
 impl<'a> Default for Container<'a> {
     fn default() -> Container<'a> {
         Container::new()
