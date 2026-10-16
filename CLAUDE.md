@@ -21,7 +21,7 @@ A zero-dependency graphics API for drawing in a terminal, written in Rust.
      cases.
    - **Integration tests** (some): `tests/*.rs`, using only the public API
      (`Display`, `Container`, `Graphics`, ...) and asserting on rendered output.
-   - **End-to-end tests** (few): `tests/e2e.rs` runs the real `main` binary and
+   - **End-to-end tests** (few): `tests/e2e.rs` runs the `demo` example and
      checks its stdout.
    Doc-tests on public items are a bonus layer, not a substitute.
 4. **Keep it testable.** Rendering goes through `Display::render()` /
@@ -44,7 +44,7 @@ cargo llvm-cov --fail-under-lines 90            # coverage gate (CI)
 - `src/display/` - `Colour`, `Pixel`, `Display` (the terminal buffer + ANSI output)
 - `src/graphics/` - `Graphic` trait, `Graphics` collection, `Container`, `Text`,
   `shapes/` (`Rect`, `Ball`)
-- `src/bin/main.rs` - small demo binary
+- `examples/demo.rs` - demo (`cargo run --example demo`)
 - `tests/` - integration, e2e and repo-hygiene tests
 
 ## Conventions
