@@ -33,6 +33,8 @@ cargo run --example demo
 
 The demo is a ~10 second animated tour of the whole library: a custom `Graphic` (plasma) in a `Container`, bouncing `Ball`s with `check_collision` in a `Graphics` collection, the 16-colour palette, `from_rgb` gradients, clipped scrolling `Text`, and live stats. Pass `-- --frames N` to change the length. Its source is in [`examples/demo.rs`](examples/demo.rs).
 
+![the animated demo](https://raw.githubusercontent.com/calum/terminal_graphics_api/master/assets/demo.gif)
+
 ## Your first program
 
 Everything is drawn into a `Display`, a grid of character cells held in memory. Draw things into it, then call `print` to show it. Coordinates are `(x, y)` from the top-left corner, and anything outside the display is clipped.
