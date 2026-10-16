@@ -2,25 +2,26 @@
 //!
 //! # How it works
 //!
-//! 1. Create a [`Display`]: an in-memory grid of cells. Each cell holds one
-//!    character, a foreground [`Colour`] and a background [`Colour`].
+//! 1. Create a [`Display`]: an in-memory grid of cells. Each cell is a
+//!    [`Pixel`]: one character, a foreground [`Colour`] and a background
+//!    [`Colour`].
 //! 2. Draw into it. Either call [`Display::set_pixel`] directly, or build
-//!    something that implements [`graphics::Graphic`] (this crate provides
-//!    [`Text`], [`Container`], [`shapes::Rect`] and [`shapes::Ball`]) and call
-//!    its `draw` method.
+//!    something that implements [`Graphic`] (this crate provides [`Text`],
+//!    [`Container`], [`shapes::Rect`] and [`shapes::Ball`]) and call its
+//!    `draw` method.
 //! 3. Show it with [`Display::print`]. Nothing appears in the terminal until
 //!    you do. [`Display::render`] and [`Display::write_to`] give you the same
 //!    output as a `String` or on any writer, which is handy for tests.
 //!
 //! Coordinates are `(x, y)` with `(0, 0)` at the top-left; `x` grows to the
 //! right and `y` grows downwards. Anything drawn outside the display is
-//! silently clipped, so graphics may safely move off-screen.
+//! silently clipped, so graphics may safely move off-screen. Nothing in the
+//! library panics on out-of-range input.
 //!
 //! # Quick start
 //!
 //! ```
-//! use terminal_graphics::graphics::Graphic;
-//! use terminal_graphics::{Colour, Display, Text};
+//! use terminal_graphics::{Colour, Display, Graphic, Text};
 //!
 //! let mut display = Display::new(20, 5);
 //!
@@ -28,7 +29,7 @@
 //! display.set_pixel(0, 0, '*', Colour::Yellow, Colour::Black);
 //!
 //! // something drawable
-//! Text::from(2, 2, "Hello!".to_string(), Colour::Green, Colour::Black).draw(&mut display);
+//! Text::new(2, 2, "Hello!", Colour::Green, Colour::Black).draw(&mut display);
 //!
 //! // `display.print()` would put it on screen; `render()` returns the same bytes
 //! let output = display.render();
@@ -37,35 +38,72 @@
 //!
 //! # Animating
 //!
-//! [`graphics::Graphics`] keeps named graphics and redraws them all, in the
-//! order they were added, each time you call `draw`:
+//! [`Graphics`] keeps named graphics and draws them all, in the order they
+//! were added. A frame is: advance the animation, then
+//! [`show`](Graphics::show), which clears the display, draws everything and
+//! prints it:
 //!
-//! ```
-//! use terminal_graphics::graphics::Graphics;
+//! ```no_run
+//! use std::{thread::sleep, time::Duration};
 //! use terminal_graphics::shapes::Ball;
-//! use terminal_graphics::{Colour, Display};
+//! use terminal_graphics::{Colour, Display, Graphics};
 //!
+//! # fn main() -> std::io::Result<()> {
 //! let mut display = Display::new(30, 10);
 //! let mut graphics = Graphics::new();
-//! graphics.add_named("ball", Box::new(Ball::new(0.0, 5.0, 1.0, 0.0, Colour::Red)));
+//! graphics.add("ball", Ball::new(0.0, 5.0, 1.0, 0.0, Colour::Red));
 //!
-//! for _ in 0..3 {
-//!     graphics.get_mut_named("ball").unwrap().update_position();
-//!     graphics.render_to(&mut display); // use `graphics.draw(&mut display)` to also print
+//! display.reserve_space()?; // once, before the first frame
+//! for _ in 0..28 {
+//!     graphics.update();
+//!     graphics.show(&mut display)?;
+//!     sleep(Duration::from_millis(33));
 //! }
+//! # Ok(())
+//! # }
 //! ```
+//!
+//! For everything in one import, use `terminal_graphics::prelude::*`.
+//!
+//! # Terminals
+//!
+//! Output uses ANSI escape codes, which Linux and macOS terminals (and recent
+//! Windows terminals) understand. Each frame moves the cursor up over the
+//! previous one, so call [`Display::reserve_space`] once before the first
+//! [`Display::print`].
 //!
 //! Run the bundled example with `cargo run --example demo`.
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
-pub mod display;
+mod colour;
+mod display;
 pub mod graphics;
+mod pixel;
 
-pub use display::colour::Colour;
-pub use display::display::Display;
-
-// re-export the most commonly used graphics
-pub use graphics::container::Container;
+pub use colour::{Colour, ParseColourError};
+pub use display::Display;
 pub use graphics::shapes;
-pub use graphics::text::Text;
+pub use graphics::{Container, Graphic, Graphics, Text};
+pub use pixel::Pixel;
+
+// compile and run-check the code blocks in the README, so it can't go stale
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;
+
+/// Everything you usually need, in one import:
+///
+/// ```
+/// use terminal_graphics::prelude::*;
+///
+/// let mut display = Display::new(10, 2);
+/// let mut graphics = Graphics::new();
+/// graphics.add("hi", Text::new(0, 0, "hi", Colour::Red, Colour::Black));
+/// graphics.draw(&mut display);
+/// assert_eq!(display.pixel(0, 0).unwrap().character(), 'h');
+/// ```
+pub mod prelude {
+    pub use crate::shapes::{Ball, Rect};
+    pub use crate::{Colour, Container, Display, Graphic, Graphics, Pixel, Text};
+}

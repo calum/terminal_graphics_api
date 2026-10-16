@@ -1,36 +1,38 @@
-use terminal_graphics::Colour;
+//! Integration tests for `Colour`, using only the public API.
+
+use std::collections::HashMap;
+use terminal_graphics::{Colour, ParseColourError};
 
 #[test]
-fn bright_black_is_grey_not_dark_red() {
-    assert_eq!(Colour::BrightBlack.get_rbg(), (85, 85, 85));
-}
-
-#[test]
-fn name_round_trips_for_every_colour() {
-    for colour in Colour::variants().iter() {
-        assert_eq!(Colour::of(colour.to_str()), *colour);
+fn names_round_trip_through_display_and_parse() {
+    for colour in Colour::ALL {
+        let name = colour.to_string();
+        assert_eq!(name.parse::<Colour>(), Ok(colour));
     }
 }
 
 #[test]
-fn unknown_name_falls_back_to_white() {
-    assert_eq!(Colour::of("nonsense"), Colour::White);
+fn unknown_names_are_an_error_not_a_silent_fallback() {
+    let err: ParseColourError = "nonsense".parse::<Colour>().unwrap_err();
+    assert!(err.to_string().contains("nonsense"));
+    // a real error type, so `?` into `Box<dyn Error>` works
+    let _: Box<dyn std::error::Error> = Box::new(err);
 }
 
 #[test]
 fn every_colour_maps_to_itself_by_rgb() {
-    for colour in Colour::variants().iter() {
-        let (r, g, b) = colour.get_rbg();
-        assert_eq!(Colour::from_rgb(r, g, b), *colour);
+    for colour in Colour::ALL {
+        let (r, g, b) = colour.rgb();
+        assert_eq!(Colour::from_rgb(r, g, b), colour);
     }
 }
 
 #[test]
-fn ansi_codes_are_unique_and_background_is_foreground_plus_ten() {
-    let mut seen = std::collections::HashSet::new();
-    for colour in Colour::variants().iter() {
-        let (fg, bg) = colour.get_codes();
-        assert_eq!(bg, fg + 10);
-        assert!(seen.insert(fg), "duplicate code {}", fg);
+fn colours_can_key_a_hash_map() {
+    let mut counts = HashMap::new();
+    for colour in [Colour::Red, Colour::Blue, Colour::Red] {
+        *counts.entry(colour).or_insert(0) += 1;
     }
+    assert_eq!(counts[&Colour::Red], 2);
+    assert_eq!(counts[&Colour::Blue], 1);
 }

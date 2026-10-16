@@ -8,27 +8,25 @@
 //! What is on screen:
 //!
 //! - **Rainbow title**: `Display::set_pixel` drawn directly.
-//! - **Palette strip**: all 16 `Colour::variants()` as `Rect`s, with
-//!   `Colour::to_str` / `Colour::of` round-tripping the highlighted name.
+//! - **Palette strip**: all 16 `Colour::ALL` as `Rect`s, with
+//!   `Colour::name` / `str::parse` round-tripping the highlighted name.
 //! - **Plasma** (left): a custom `Graphic` implemented in this file, shaded
 //!   with `Colour::from_rgb` and held in a `Container`.
 //! - **Arena** (right): bouncing `Ball`s in a `Graphics` collection, steered
-//!   with `update_speeds` / `update_position`, a paddle `Rect` that uses
-//!   `check_collision`, and a burst of extra balls that come and go with
-//!   `add_named` / `remove_named`.
+//!   with `scale_speed` / `update`, a paddle `Rect` that uses `contains`, and
+//!   a burst of extra balls that come and go with `add` / `remove`.
 //! - **Rainbow river**: `from_rgb` mapped over the whole screen width.
-//! - **Marquee**: `Text` scrolled with `move_named_graphic`, clipped at both
+//! - **Marquee**: `Text` scrolled with `Graphics::move_by`, clipped at both
 //!   screen edges.
-//! - **HUD**: `Container`s holding `Text` updated with `set_text`, including
-//!   the live byte size of a frame from `Display::write_to`.
+//! - **HUD**: `Container`s holding `Text`, including the live byte size of a
+//!   frame from `Display::write_to`.
 
 use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
 
-use terminal_graphics::graphics::{Graphic, Graphics};
 use terminal_graphics::shapes::{Ball, Rect};
-use terminal_graphics::{Colour, Container, Display, Text};
+use terminal_graphics::{Colour, Container, Display, Graphic, Graphics, Text};
 
 const WIDTH: u32 = 64;
 const HEIGHT: u32 = 28;
@@ -86,7 +84,7 @@ impl Graphic for Plasma {
         }
     }
 
-    fn get_position(&self) -> (isize, isize) {
+    fn position(&self) -> (isize, isize) {
         (self.x, self.y)
     }
 
@@ -96,8 +94,8 @@ impl Graphic for Plasma {
     }
 }
 
-/// Which way a ball is travelling. `Ball` keeps its own speed private, so the
-/// demo remembers the signs to know when to bounce.
+/// Which way a ball is travelling. The demo remembers the signs to know when
+/// to bounce.
 struct Bouncer {
     name: String,
     dx: f32,
@@ -130,8 +128,8 @@ fn parse_options() -> Options {
 }
 
 fn bright_colours() -> Vec<Colour> {
-    // the last 7 variants are the bright colours (BrightBlack is the grey)
-    Colour::variants()[9..].to_vec()
+    // the last 7 colours are the bright ones (BrightBlack is the grey)
+    Colour::ALL[9..].to_vec()
 }
 
 fn new_bouncer(
@@ -143,7 +141,7 @@ fn new_bouncer(
     dy: f32,
     colour: Colour,
 ) -> Bouncer {
-    graphics.add_named(name, Box::new(Ball::new(x, y, dx, dy, colour)));
+    graphics.add(name, Ball::new(x, y, dx, dy, colour));
     Bouncer {
         name: name.to_string(),
         dx,
@@ -161,18 +159,18 @@ fn step_balls(graphics: &mut Graphics, bouncers: &mut [Bouncer]) -> u32 {
     let floor = ARENA_Y + ARENA_H - 1; // the paddle's row
 
     for bouncer in bouncers.iter_mut() {
-        let Some(ball) = graphics.get_mut_named(&bouncer.name) else {
+        let Some(ball) = graphics.get_mut(&bouncer.name) else {
             continue;
         };
-        ball.update_position();
-        let (x, y) = ball.get_position();
+        ball.update();
+        let (x, y) = ball.position();
 
         if (x <= left && bouncer.dx < 0.0) || (x >= right && bouncer.dx > 0.0) {
-            ball.update_speeds(-1.0, 1.0);
+            ball.scale_speed(-1.0, 1.0);
             bouncer.dx = -bouncer.dx;
         }
         if (y <= top && bouncer.dy < 0.0) || (y >= floor && bouncer.dy > 0.0) {
-            ball.update_speeds(1.0, -1.0);
+            ball.scale_speed(1.0, -1.0);
             bouncer.dy = -bouncer.dy;
         }
         // rounding can leave a ball one step outside the walls; pull it back in
@@ -184,10 +182,10 @@ fn step_balls(graphics: &mut Graphics, bouncers: &mut [Bouncer]) -> u32 {
         let y = cy;
 
         if y == floor {
-            let area = ball.get_area();
+            let area = ball.area();
             let on_paddle = graphics
-                .get_named("paddle")
-                .is_some_and(|paddle| area.iter().any(|&(ax, ay)| paddle.check_collision(ax, ay)));
+                .get("paddle")
+                .is_some_and(|paddle| area.iter().any(|&(ax, ay)| paddle.contains(ax, ay)));
             if on_paddle {
                 paddle_hits += 1;
             }
@@ -201,8 +199,8 @@ fn steer_paddle(graphics: &mut Graphics, bouncers: &[Bouncer]) {
     let mut target = None;
     let mut lowest = isize::MIN;
     for bouncer in bouncers {
-        if let Some(ball) = graphics.get_named(&bouncer.name) {
-            let (x, y) = ball.get_position();
+        if let Some(ball) = graphics.get(&bouncer.name) {
+            let (x, y) = ball.position();
             if y > lowest {
                 lowest = y;
                 target = Some(x);
@@ -210,12 +208,12 @@ fn steer_paddle(graphics: &mut Graphics, bouncers: &[Bouncer]) {
         }
     }
     let Some(target) = target else { return };
-    let Some(paddle) = graphics.get_named("paddle") else {
+    let Some(paddle) = graphics.get("paddle") else {
         return;
     };
-    let (paddle_x, _) = paddle.get_position();
+    let (paddle_x, _) = paddle.position();
     let want = (target - PADDLE_W / 2 + 1).clamp(ARENA_X, ARENA_X + ARENA_W - PADDLE_W);
-    graphics.move_named_graphic("paddle", (want - paddle_x).clamp(-2, 2), 0);
+    graphics.move_by("paddle", (want - paddle_x).clamp(-2, 2), 0);
 }
 
 /// Paints the rainbow title one letter at a time with `set_pixel`.
@@ -229,10 +227,10 @@ fn draw_title(display: &mut Display, frame: u32) {
     }
     let subtitle = "zero dependencies | 100% Rust | 16 ANSI colours";
     let start = (WIDTH as usize - subtitle.len()) / 2;
-    Text::from(
+    Text::new(
         start as isize,
         1,
-        subtitle.to_string(),
+        subtitle,
         Colour::BrightBlack,
         Colour::Black,
     )
@@ -252,6 +250,17 @@ fn draw_river(display: &mut Display, frame: u32) {
     }
 }
 
+/// A labelled HUD box: a bordered `Container` holding one line of `Text`.
+fn hud_box(x: isize, text: String, colour: Colour) -> Container {
+    Container::new(x, 23, 31, 4, colour, Colour::Black).with_content(Text::new(
+        0,
+        0,
+        text,
+        colour,
+        Colour::Black,
+    ))
+}
+
 fn main() {
     let options = parse_options();
 
@@ -259,82 +268,71 @@ fn main() {
     let mut graphics = Graphics::new();
 
     // drawing order is insertion order: the backdrop first, then the rest
-    graphics.add_named(
+    graphics.add(
         "backdrop",
-        Box::new(Rect::new(
-            0,
-            0,
-            WIDTH as isize,
-            HEIGHT as isize,
-            Colour::Black,
-        )),
+        Rect::new(0, 0, WIDTH as isize, HEIGHT as isize, Colour::Black),
     );
-    for (i, colour) in Colour::variants().into_iter().enumerate() {
-        graphics.add_named(
-            &format!("swatch{i}"),
-            Box::new(Rect::new(i as isize * 4, 2, 4, 2, colour)),
+    for (i, colour) in Colour::ALL.into_iter().enumerate() {
+        graphics.add(
+            format!("swatch{i}"),
+            Rect::new(i as isize * 4, 2, 4, 2, colour),
         );
     }
-    graphics.add_named(
-        "arena",
-        Box::new(Rect::new(
-            ARENA_X,
-            ARENA_Y,
-            ARENA_W,
-            ARENA_H,
-            Colour::BrightBlack,
-        )),
-    );
-    graphics.add_named(
-        "paddle",
-        Box::new(Rect::new(
-            ARENA_X + 10,
-            ARENA_Y + ARENA_H - 1,
-            PADDLE_W,
-            1,
-            Colour::BrightWhite,
-        )),
-    );
-    graphics.add_named(
-        "marquee",
-        Box::new(Text::from(
-            WIDTH as isize,
-            21,
-            MARQUEE.to_string(),
-            Colour::BrightYellow,
-            Colour::Black,
-        )),
-    );
-    graphics.add_named(
-        "caption_plasma",
-        Box::new(Text::from(
-            1,
-            5,
-            "custom Graphic + from_rgb".to_string(),
-            Colour::BrightCyan,
-            Colour::Black,
-        )),
-    );
-    graphics.add_named(
-        "caption_arena",
-        Box::new(Text::from(
-            ARENA_X,
-            5,
-            "Graphics + check_collision".to_string(),
-            Colour::BrightGreen,
-            Colour::Black,
-        )),
-    );
-    graphics.add_named(
-        "footer",
-        Box::new(Text::from(
-            1,
-            27,
-            "cargo add terminal_graphics    |    Ctrl-C to quit".to_string(),
-            Colour::BrightBlack,
-            Colour::Black,
-        )),
-    );
+    graphics
+        .add(
+            "arena",
+            Rect::new(ARENA_X, ARENA_Y, ARENA_W, ARENA_H, Colour::BrightBlack),
+        )
+        .add(
+            "paddle",
+            Rect::new(
+                ARENA_X + 10,
+                ARENA_Y + ARENA_H - 1,
+                PADDLE_W,
+                1,
+                Colour::BrightWhite,
+            ),
+        )
+        .add(
+            "marquee",
+            Text::new(
+                WIDTH as isize,
+                21,
+                MARQUEE,
+                Colour::BrightYellow,
+                Colour::Black,
+            ),
+        )
+        .add(
+            "caption_plasma",
+            Text::new(
+                1,
+                5,
+                "custom Graphic + from_rgb",
+                Colour::BrightCyan,
+                Colour::Black,
+            ),
+        )
+        .add(
+            "caption_arena",
+            Text::new(
+                ARENA_X,
+                5,
+                "Graphics + contains",
+                Colour::BrightGreen,
+                Colour::Black,
+            ),
+        )
+        .add(
+            "footer",
+            Text::new(
+                1,
+                27,
+                "cargo add terminal_graphics    |    Ctrl-C to quit",
+                Colour::BrightBlack,
+                Colour::Black,
+            ),
+        );
 
     let balls = [
         ("ball0", 36.0, 8.0, 0.9, 0.35, Colour::BrightRed),
@@ -347,31 +345,23 @@ fn main() {
         .map(|&(name, x, y, dx, dy, colour)| new_bouncer(&mut graphics, name, x, y, dx, dy, colour))
         .collect();
 
-    let mut status = Text::from(1, 1, String::new(), Colour::BrightGreen, Colour::Black);
-    let mut bytes_text = Text::from(
-        1,
-        1,
-        String::new(),
-        Colour::of("BrightYellow"),
-        Colour::Black,
-    );
-    let mut colour_text = Text::from(1, 1, String::new(), Colour::BrightWhite, Colour::Black);
-
     let mut bounces = 0;
     let mut frame_bytes = 0;
 
     // make room for the display: each frame moves the cursor back up over the
     // previous one, so there must be that many lines to move up over
-    print!("{}", "\n".repeat(HEIGHT as usize));
+    if display.reserve_space().is_err() {
+        return;
+    }
 
     for frame in 0..options.frames {
         // --- update ---
         steer_paddle(&mut graphics, &bouncers);
         bounces += step_balls(&mut graphics, &mut bouncers);
-        graphics.move_named_graphic("marquee", -1, 0);
-        if let Some(marquee) = graphics.get_named("marquee") {
-            if marquee.get_position().0 < -(MARQUEE.len() as isize) {
-                graphics.move_named_graphic("marquee", WIDTH as isize + MARQUEE.len() as isize, 0);
+        graphics.move_by("marquee", -1, 0);
+        if let Some(marquee) = graphics.get("marquee") {
+            if marquee.position().0 < -(MARQUEE.len() as isize) {
+                graphics.move_by("marquee", WIDTH as isize + MARQUEE.len() as isize, 0);
             }
         }
 
@@ -394,90 +384,65 @@ fn main() {
         }
         if frame == BURST_END {
             for i in 0..3 {
-                graphics.remove_named(&format!("burst{i}"));
+                graphics.remove(&format!("burst{i}"));
             }
             bouncers.retain(|b| !b.name.starts_with("burst"));
         }
 
         // --- draw ---
-        // render_to clears the display and draws every named graphic, but
-        // doesn't print, so we can keep painting on top before printing
-        graphics.render_to(&mut display);
+        // clear and draw every named graphic, but don't print yet, so we can
+        // keep painting on top before printing
+        display.clear();
+        graphics.draw(&mut display);
 
         draw_title(&mut display, frame);
 
-        // the palette marker: Colour::to_str and Colour::of agree
+        // the palette marker: Colour::name and str::parse agree
         let highlighted = (frame as usize / 4) % 16;
-        let highlight_colour = Colour::variants()[highlighted];
-        let name = highlight_colour.to_str();
-        assert_eq!(Colour::of(name), highlight_colour);
-        Text::from(
-            highlighted as isize * 4 + 1,
-            4,
-            "^".to_string(),
-            Colour::BrightWhite,
-            Colour::Black,
-        )
-        .draw(&mut display);
-        colour_text.set_text(format!("Colour::{name}"));
-        // the label follows the marker, on whichever side has room
-        let label_len = "Colour::".len() + name.len();
+        let highlight_colour = Colour::ALL[highlighted];
+        let name = highlight_colour.name();
+        assert_eq!(name.parse(), Ok(highlight_colour));
         let marker_x = highlighted as isize * 4 + 1;
-        let label_x = if marker_x + 2 + label_len as isize <= WIDTH as isize {
+        Text::new(marker_x, 4, "^", Colour::BrightWhite, Colour::Black).draw(&mut display);
+        // the label follows the marker, on whichever side has room
+        let label = format!("Colour::{name}");
+        let label_x = if marker_x + 2 + label.len() as isize <= WIDTH as isize {
             marker_x + 2
         } else {
-            marker_x - 1 - label_len as isize
+            marker_x - 1 - label.len() as isize
         };
-        colour_text.set_position(label_x, 4);
-        colour_text.draw(&mut display);
+        Text::new(label_x, 4, label, Colour::BrightWhite, Colour::Black).draw(&mut display);
 
         draw_river(&mut display, frame);
 
-        // the plasma lives in a Container; the container offsets it by its
-        // own position, so the plasma is positioned relative to the container
-        let mut plasma = Plasma {
+        // the plasma lives in a Container; its position is relative to the
+        // inside of the container
+        let plasma = Plasma {
             x: 0,
             y: 0,
-            width: 30,
-            height: 10,
+            width: 29,
+            height: 9,
             time: frame as f32 * 0.09,
         };
-        Container::from(1, 6, 30, 10, &mut plasma, Colour::BrightCyan, Colour::Black)
+        Container::new(1, 6, 31, 11, Colour::BrightCyan, Colour::Black)
+            .with_content(plasma)
             .draw(&mut display);
 
-        status.set_text(format!("frame {frame:>4}   bounces {bounces:>3}"));
-        status.set_position(1, 1);
-        Container::from(
-            1,
-            23,
-            30,
-            3,
-            &mut status,
-            Colour::BrightGreen,
-            Colour::Black,
-        )
-        .draw(&mut display);
-
-        bytes_text.set_text(format!("{frame_bytes:>6} bytes/frame"));
-        bytes_text.set_position(1, 1);
-        Container::from(
-            33,
-            23,
-            30,
-            3,
-            &mut bytes_text,
-            Colour::BrightYellow,
-            Colour::Black,
-        )
-        .draw(&mut display);
+        let status = format!("frame {frame:>4}   bounces {bounces:>3}");
+        hud_box(1, status, Colour::BrightGreen).draw(&mut display);
+        let bytes = format!("{frame_bytes:>6} bytes/frame");
+        hud_box(33, bytes, Colour::BrightYellow).draw(&mut display);
 
         // --- show ---
         // print() is just write_to(stdout); here we do the same through
-        // write_to so we can measure the frame, then keep stdout flushed
+        // write_to so we can measure the frame
         let mut bytes = Vec::new();
         let _ = display.write_to(&mut bytes);
         frame_bytes = bytes.len();
-        display.print();
+        if display.print().is_err() {
+            // stdout was closed (e.g. a broken pipe): stop quietly
+            return;
+        }
 
         if options.delay {
             sleep(FRAME_TIME);
@@ -485,6 +450,7 @@ fn main() {
     }
 
     // leave the cursor below the picture and the terminal colours reset
-    let _ = std::io::stdout().flush();
-    println!("\x1b[0m");
+    let mut stdout = std::io::stdout();
+    let _ = writeln!(stdout, "\x1b[0m");
+    let _ = stdout.flush();
 }

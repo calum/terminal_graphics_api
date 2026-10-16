@@ -1,13 +1,10 @@
 //! Integration tests: public API only, asserting on rendered output.
 
-use terminal_graphics::graphics::shapes::Rect;
-use terminal_graphics::graphics::Graphic;
-use terminal_graphics::graphics::Graphics;
-use terminal_graphics::{Colour, Container, Display, Text};
+use terminal_graphics::prelude::*;
 
 fn strip_ansi(s: &str) -> String {
     let mut out = String::new();
-    let mut chars = s.chars().peekable();
+    let mut chars = s.chars();
     while let Some(c) = chars.next() {
         if c == '\x1b' {
             for n in chars.by_ref() {
@@ -54,23 +51,43 @@ fn zero_sized_display_ignores_drawing_instead_of_panicking() {
 #[test]
 fn container_partly_outside_display_does_not_panic() {
     let mut display = Display::new(5, 5);
-    let mut text = Text::from(0, 0, "hi".to_string(), Colour::Red, Colour::Black);
-    let container = Container::from(3, 3, 10, 10, &mut text, Colour::Blue, Colour::Black);
-    container.draw(&mut display);
+    Container::new(3, 3, 10, 10, Colour::Blue, Colour::Black)
+        .with_content(Text::new(0, 0, "hi", Colour::Red, Colour::Black))
+        .draw(&mut display);
 }
 
 #[test]
 fn container_entirely_outside_display_does_not_panic() {
     let mut display = Display::new(5, 5);
-    let mut container = Container::new();
-    container.set_position(-50, 100);
+    Container::new(-50, 100, 10, 10, Colour::Blue, Colour::Black).draw(&mut display);
+    assert_eq!(display, Display::new(5, 5));
+}
+
+#[test]
+fn a_moved_container_takes_its_text_with_it() {
+    let mut container = Container::new(0, 0, 8, 3, Colour::Blue, Colour::Black)
+        .with_content(Text::new(0, 0, "hi", Colour::Red, Colour::Black));
+    container.move_by(2, 1);
+
+    let mut display = Display::new(12, 6);
     container.draw(&mut display);
+
+    let rows: Vec<String> = strip_ansi(&display.render())
+        .replace('\x20', ".")
+        .chars()
+        .collect::<Vec<_>>()
+        .chunks(12)
+        .map(|row| row.iter().collect())
+        .collect();
+    assert_eq!(rows[1], "..┌──────┐..");
+    assert_eq!(rows[2], "..│hi....│..");
+    assert_eq!(rows[3], "..└──────┘..");
 }
 
 #[test]
 fn text_is_clipped_at_display_edge() {
     let mut display = Display::new(4, 1);
-    Text::from(2, 0, "abcdef".to_string(), Colour::Red, Colour::Black).draw(&mut display);
+    Text::new(2, 0, "abcdef", Colour::Red, Colour::Black).draw(&mut display);
     assert_eq!(strip_ansi(&display.render()), "  ab");
 }
 
@@ -78,32 +95,49 @@ fn text_is_clipped_at_display_edge() {
 fn later_added_graphics_draw_on_top_deterministically() {
     for _ in 0..20 {
         let mut graphics = Graphics::new();
-        graphics.add_named("a", Box::new(Rect::new(0, 0, 1, 1, Colour::Red)));
-        graphics.add_named("b", Box::new(Rect::new(0, 0, 1, 1, Colour::Blue)));
-        graphics.add_named("c", Box::new(Rect::new(0, 0, 1, 1, Colour::Green)));
+        graphics
+            .add("a", Rect::new(0, 0, 1, 1, Colour::Red))
+            .add("b", Rect::new(0, 0, 1, 1, Colour::Blue))
+            .add("c", Rect::new(0, 0, 1, 1, Colour::Green));
 
         let mut display = Display::new(1, 1);
-        graphics.render_to(&mut display);
+        graphics.draw(&mut display);
 
-        assert!(
-            display.render().contains("\x1b[37;42m"),
-            "last added must win"
-        );
+        assert_eq!(display.pixel(0, 0).unwrap().background(), Colour::Green);
     }
-}
-
-#[test]
-fn moving_a_missing_graphic_is_a_no_op() {
-    let mut graphics = Graphics::new();
-    graphics.move_named_graphic("ghost", 1, 1);
 }
 
 #[test]
 fn re_adding_a_name_replaces_but_keeps_one_entry() {
     let mut graphics = Graphics::new();
-    graphics.add_named("a", Box::new(Rect::new(0, 0, 1, 1, Colour::Red)));
-    graphics.add_named("a", Box::new(Rect::new(5, 5, 1, 1, Colour::Red)));
-    assert_eq!(graphics.get_named("a").unwrap().get_position(), (5, 5));
-    graphics.remove_named("a");
-    assert!(graphics.get_named("a").is_none());
+    graphics.add("a", Rect::new(0, 0, 1, 1, Colour::Red));
+    graphics.add("a", Rect::new(5, 5, 1, 1, Colour::Red));
+    assert_eq!(graphics.len(), 1);
+    assert_eq!(graphics.get("a").unwrap().position(), (5, 5));
+    assert!(graphics.remove("a").is_some());
+    assert!(graphics.is_empty());
+}
+
+#[test]
+fn moving_a_missing_graphic_is_a_no_op() {
+    let mut graphics = Graphics::new();
+    assert!(!graphics.move_by("ghost", 1, 1));
+}
+
+#[test]
+fn an_animation_loop_moves_balls_and_redraws_cleanly() {
+    let mut graphics = Graphics::new();
+    graphics.add("ball", Ball::new(0.0, 0.0, 1.0, 0.0, Colour::Red));
+    let mut display = Display::new(6, 1);
+
+    for frame in 1..=3 {
+        graphics.update();
+        display.clear();
+        graphics.draw(&mut display);
+        // exactly the two ball cells are red, and they move one cell a frame
+        let red: Vec<isize> = (0..6)
+            .filter(|&x| display.pixel(x, 0).unwrap().background() == Colour::Red)
+            .collect();
+        assert_eq!(red, vec![frame, frame + 1]);
+    }
 }
