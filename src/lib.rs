@@ -1,5 +1,8 @@
 //! A zero-dependency, 100% Rust graphics API for drawing in a terminal.
 //!
+//! Try it in your browser, with a Snake game built only with this crate:
+//! <https://calum.github.io/terminal_graphics_api/>
+//!
 //! # How it works
 //!
 //! 1. Create a [`Display`]: an in-memory grid of cells. Each cell is a

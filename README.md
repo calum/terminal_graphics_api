@@ -6,6 +6,8 @@
 # Rust Terminal Graphics API
 A zero dependencies, 100% Rust graphics API for the terminal.
 
+**[Try it in your browser: play a Snake game built with this library](https://calum.github.io/terminal_graphics_api/)**
+
 ## Installation
 
 You need a [Rust toolchain](https://rustup.rs) and a terminal that understands ANSI escape codes (Linux and macOS terminals do, as do recent Windows terminals; the library is aimed at Linux).
@@ -95,6 +97,7 @@ Version 1.0 renamed and reshaped much of the API. See [CHANGELOG.md](CHANGELOG.m
 ## Links
 - crates.io: https://crates.io/crates/terminal_graphics
 - API documentation: https://docs.rs/terminal_graphics
+- Website (with a playable game): https://calum.github.io/terminal_graphics_api/
 - Source: https://github.com/calum/terminal_graphics_api
 - Issues: https://github.com/calum/terminal_graphics_api/issues
 
