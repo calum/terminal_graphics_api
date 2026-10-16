@@ -6,12 +6,16 @@ use std::path::Path;
 /// Extensions allowed in the repo. Anything else (.py, .js, .sh, .c, ...) fails the build.
 const ALLOWED_EXTENSIONS: &[&str] = &["rs", "toml", "md", "yml", "png", "gif", "lock"];
 const ALLOWED_FILE_NAMES: &[&str] = &[".gitignore", ".gitattributes", "LICENSE", "CLAUDE.md"];
-const IGNORED_DIRS: &[&str] = &["target", ".git"];
+const IGNORED_DIRS: &[&str] = &["target"];
 
 fn walk(dir: &Path, found: &mut Vec<String>) {
     for entry in fs::read_dir(dir).unwrap() {
         let path = entry.unwrap().path();
         let name = path.file_name().unwrap().to_string_lossy().to_string();
+        // `.git` is a directory in a clone but a file in a git worktree
+        if name == ".git" {
+            continue;
+        }
         if path.is_dir() {
             if !IGNORED_DIRS.contains(&name.as_str()) {
                 walk(&path, found);
