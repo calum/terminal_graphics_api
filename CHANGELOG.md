@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Added a website at <https://calum.github.io/terminal_graphics_api/> with a
+  playable Snake game built with the library and compiled to WebAssembly
+  (`examples/web.rs`). It is generated from Rust (`examples/build_site.rs`) and
+  deployed by `.github/workflows/pages.yml`. The new examples are not part of
+  the published crate.
+
 ## 1.0.0
 
 A redesign for consistency, safety and ease of use. This release has breaking
