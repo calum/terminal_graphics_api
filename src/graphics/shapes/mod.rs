@@ -1,3 +1,6 @@
+//! Ready-made graphics shapes: [`Rect`], a filled rectangle, and [`Ball`], a
+//! two-cell-wide moving block. Both implement [`Graphic`].
+
 use crate::display::colour::Colour;
 use crate::display::display::Display;
 use crate::graphics::Graphic;
@@ -6,7 +9,29 @@ pub mod ball;
 
 pub use self::ball::Ball;
 
-/// a rectangle
+/// A filled rectangle.
+///
+/// `(pos_x, pos_y)` is the top-left cell. `width` and `height` are the size in
+/// cells, so a `Rect` of width 3 and height 2 covers 6 cells. A zero or
+/// negative size covers no cells and draws nothing. Parts outside the display
+/// are clipped.
+///
+/// # Example
+///
+/// ```
+/// use terminal_graphics::graphics::Graphic;
+/// use terminal_graphics::{shapes::Rect, Colour, Display};
+///
+/// let rect = Rect::new(1, 1, 2, 2, Colour::Red);
+///
+/// let mut display = Display::new(4, 4);
+/// rect.draw(&mut display);
+///
+/// assert_eq!(display.pixel_mut(1, 1).unwrap().background(), Colour::Red);
+/// assert_eq!(display.pixel_mut(2, 2).unwrap().background(), Colour::Red);
+/// assert_eq!(display.pixel_mut(3, 3).unwrap().background(), Colour::White);
+/// assert_eq!(rect.get_area().len(), 4);
+/// ```
 pub struct Rect {
     pos_x: isize,
     pos_y: isize,
@@ -16,6 +41,11 @@ pub struct Rect {
 }
 
 impl Rect {
+    /// Creates a rectangle.
+    ///
+    /// - `pos_x`, `pos_y`: top-left cell, in display cells.
+    /// - `width`, `height`: size in cells.
+    /// - `colour`: the fill colour, used as the background of each cell.
     pub fn new(pos_x: isize, pos_y: isize, width: isize, height: isize, colour: Colour) -> Rect {
         Rect {
             pos_x,
@@ -28,7 +58,8 @@ impl Rect {
 }
 
 impl Graphic for Rect {
-    /// Draw method for the Rectangle
+    /// Fills every cell of the rectangle with the fill colour. The cells hold
+    /// a space, so only the background is visible.
     fn draw(&self, display: &mut Display) {
         // starting at (x,y), draw the rectangle onto the display
         let x = self.pos_x;
@@ -44,11 +75,14 @@ impl Graphic for Rect {
         (self.pos_x, self.pos_y)
     }
 
+    /// Moves the top-left cell of the rectangle.
     fn set_position(&mut self, pos_x: isize, pos_y: isize) {
         self.pos_x = pos_x;
         self.pos_y = pos_y;
     }
 
+    /// Returns every cell covered by the rectangle (`width * height` cells in
+    /// total), ordered column by column.
     fn get_area(&self) -> Vec<(isize, isize)> {
         let mut area = Vec::new();
 
