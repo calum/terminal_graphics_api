@@ -75,12 +75,6 @@ To animate, keep your graphics in a `Graphics` collection, change them each fram
 ## Example application using the API
 For example applications, try [termage](https://github.com/calum/terminal_image_display) or [terminal_game_engine](https://github.com/calum/terminal_game_engine).
 
-### Example Gifs
-
-![example_terminal game](https://raw.githubusercontent.com/calum/terminal_graphics_api/master/assets/terminal_game.gif)
-
-![ferris in the terminal](https://raw.githubusercontent.com/calum/terminal_graphics_api/master/assets/ferris_crab.png)
-
 ## License
 
 Licensed under either of MIT or Apache-2.0 at your option.
