@@ -1,6 +1,6 @@
-use display::colour::Colour;
-use display::display::Display;
-use graphics::Graphic;
+use crate::display::colour::Colour;
+use crate::display::display::Display;
+use crate::graphics::Graphic;
 
 pub mod ball;
 
@@ -59,5 +59,65 @@ impl Graphic for Rect {
         }
 
         area
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rect_fills_exactly_its_area() {
+        let r = Rect::new(1, 1, 2, 2, Colour::Red);
+        let mut d = Display::new(4, 4);
+        r.draw(&mut d);
+        for y in 0..4 {
+            for x in 0..4 {
+                let inside = (1..3).contains(&x) && (1..3).contains(&y);
+                let bg = d.pixel_mut(x, y).unwrap().background();
+                assert_eq!(bg == Colour::Red, inside, "({},{})", x, y);
+            }
+        }
+    }
+
+    #[test]
+    fn rect_area_lists_every_cell_once() {
+        let r = Rect::new(2, 3, 3, 2, Colour::Red);
+        let mut area = r.get_area();
+        area.sort();
+        area.dedup();
+        assert_eq!(area.len(), 6);
+        assert!(area.contains(&(2, 3)) && area.contains(&(4, 4)));
+    }
+
+    #[test]
+    fn rect_collision_matches_its_area() {
+        let r = Rect::new(0, 0, 2, 2, Colour::Red);
+        assert!(r.check_collision(1, 1));
+        assert!(!r.check_collision(2, 2));
+        assert!(!r.check_collision(-1, 0));
+    }
+
+    #[test]
+    fn rect_with_zero_size_has_no_area_and_draws_nothing() {
+        let r = Rect::new(0, 0, 0, 5, Colour::Red);
+        assert!(r.get_area().is_empty());
+        let mut d = Display::new(2, 2);
+        r.draw(&mut d);
+        assert_eq!(d.render(), Display::new(2, 2).render());
+    }
+
+    #[test]
+    fn rect_partly_off_screen_is_clipped() {
+        let mut d = Display::new(2, 2);
+        Rect::new(-1, -1, 5, 5, Colour::Red).draw(&mut d);
+        assert_eq!(d.pixel_mut(1, 1).unwrap().background(), Colour::Red);
+    }
+
+    #[test]
+    fn rect_moves_by_delta() {
+        let mut r = Rect::new(1, 1, 1, 1, Colour::Red);
+        r.move_position(2, -1);
+        assert_eq!(r.get_position(), (3, 0));
     }
 }
