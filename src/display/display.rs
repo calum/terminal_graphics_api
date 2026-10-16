@@ -1,13 +1,32 @@
+//! The [`Display`]: an in-memory grid of pixels that is rendered to the terminal.
+
 use crate::display::colour::Colour;
 use crate::display::pixel::*;
 use std::io::{self, Write};
 
+/// The terminal buffer: a grid of pixels that is drawn into, then printed.
+///
+/// Nothing is written to the terminal until you call [`Display::print`],
+/// [`Display::render`] or [`Display::write_to`]. Coordinates are `(x, y)`,
+/// with `(0, 0)` at the top left.
 pub struct Display {
     rows: Vec<Pixels>,
     width: usize,
 }
 
 impl Display {
+    /// Creates a display `size_x` columns wide and `size_y` rows high, with
+    /// every pixel set to the default (a black space on a white background).
+    ///
+    /// A size of 0 in either direction gives a display with no pixels, so all
+    /// drawing into it is clipped. Never panics.
+    ///
+    /// ```
+    /// use terminal_graphics::Display;
+    ///
+    /// let display = Display::new(10, 3);
+    /// assert_eq!(display.size(), (10, 3));
+    /// ```
     pub fn new(size_x: u32, size_y: u32) -> Display {
         let mut rows = Vec::new();
         for _ in 0..size_y {
@@ -19,7 +38,8 @@ impl Display {
         }
     }
 
-    /// Returns the display size as `(width, height)`, in pixels
+    /// Returns the display size as `(width, height)`, in cells (one cell is
+    /// one character and one pixel)
     ///
     /// ```
     /// use terminal_graphics::display::display::Display;
@@ -31,7 +51,22 @@ impl Display {
         (self.width as u32, self.rows.len() as u32)
     }
 
-    /// set a pixel; coordinates outside the display are ignored
+    /// Sets the character and both colours of the pixel at `(x, y)`.
+    ///
+    /// `(0, 0)` is the top left, `x` grows to the right and `y` grows down.
+    /// Coordinates outside the display are silently ignored (clipped), so
+    /// this never panics.
+    ///
+    /// ```
+    /// use terminal_graphics::{Colour, Display};
+    ///
+    /// let mut display = Display::new(4, 2);
+    /// display.set_pixel(3, 1, 'x', Colour::Green, Colour::Blue);
+    ///
+    /// // (4, 0) is outside a 4 by 2 display, so this has no effect
+    /// display.set_pixel(4, 0, 'y', Colour::Red, Colour::Red);
+    /// assert!(!display.render().contains('y'));
+    /// ```
     pub fn set_pixel(
         &mut self,
         x: isize,
@@ -47,8 +82,23 @@ impl Display {
         }
     }
 
-    /// get a mutable reference to a pixel at position (x, y),
-    /// or `None` if it is outside the display
+    /// Returns a mutable reference to the pixel at `(x, y)`, or `None` if that
+    /// position is outside the display.
+    ///
+    /// Use this when you want to change a pixel and handle the out-of-bounds
+    /// case yourself. Unlike [`Display::get_mut_pixel`], it never panics.
+    ///
+    /// ```
+    /// use terminal_graphics::{Colour, Display};
+    ///
+    /// let mut display = Display::new(3, 3);
+    /// if let Some(pixel) = display.pixel_mut(2, 2) {
+    ///     pixel.set_character('@');
+    ///     pixel.set_colour(Colour::Yellow);
+    /// }
+    ///
+    /// assert!(display.pixel_mut(3, 0).is_none());
+    /// ```
     pub fn pixel_mut(&mut self, x: isize, y: isize) -> Option<&mut Pixel> {
         if x < 0 || y < 0 {
             return None;
@@ -56,14 +106,18 @@ impl Display {
         self.rows.get_mut(y as usize)?.get_mut(x as usize)
     }
 
-    /// get a mutable reference to a pixel at position (x, y)
+    /// Returns a mutable reference to the pixel at `(x, y)`.
     ///
-    /// Panics if (x, y) is outside the display; prefer [`Display::pixel_mut`].
+    /// **Panics** if `(x, y)` is outside the display, including any negative
+    /// coordinate. To avoid the panic, use [`Display::pixel_mut`], which
+    /// returns `None` instead.
     pub fn get_mut_pixel(&mut self, x: isize, y: isize) -> &mut Pixel {
         &mut self.rows[y as usize][x as usize]
     }
 
-    /// Clears the display
+    /// Resets every pixel to the default (a black space on a white background).
+    ///
+    /// The size of the display does not change.
     pub fn clear(&mut self) {
         for pixels in &mut self.rows {
             for pixel in pixels {
@@ -72,7 +126,26 @@ impl Display {
         }
     }
 
-    /// Renders the display to a string of ANSI escape codes
+    /// Renders the display to a string of ANSI escape codes, without printing it.
+    ///
+    /// The string starts by moving the cursor up by the display's height, so
+    /// printing the result again overwrites the previous frame in place. Each
+    /// row is followed by a move back to the start of the next line. A display
+    /// with no rows renders to an empty string.
+    ///
+    /// Use this for tests, or to send the output somewhere other than stdout.
+    /// To print to the terminal, use [`Display::print`].
+    ///
+    /// ```
+    /// use terminal_graphics::{Colour, Display};
+    ///
+    /// let mut display = Display::new(2, 1);
+    /// display.set_pixel(0, 0, 'A', Colour::Red, Colour::Black);
+    ///
+    /// let output = display.render();
+    /// assert!(output.starts_with("\x1b[1F"));
+    /// assert!(output.contains('A'));
+    /// ```
     pub fn render(&self) -> String {
         let mut out = String::new();
         if self.rows.is_empty() {
@@ -101,12 +174,29 @@ impl Display {
         out
     }
 
-    /// Writes the rendered display to any writer
+    /// Writes the rendered display, as produced by [`Display::render`], to any
+    /// writer: a file, a `Vec<u8>`, a network socket, and so on.
+    ///
+    /// Returns the first error the writer reports. This does not flush the
+    /// writer.
+    ///
+    /// ```
+    /// use terminal_graphics::Display;
+    ///
+    /// let display = Display::new(3, 1);
+    /// let mut bytes: Vec<u8> = Vec::new();
+    /// display.write_to(&mut bytes).unwrap();
+    /// assert_eq!(bytes, display.render().into_bytes());
+    /// ```
     pub fn write_to<W: Write>(&self, writer: &mut W) -> io::Result<()> {
         writer.write_all(self.render().as_bytes())
     }
 
-    /// Prints the display to the terminal
+    /// Prints the display to the terminal (stdout), then flushes it.
+    ///
+    /// Printing the same display again redraws it in place. Errors are
+    /// ignored, so this never panics (for example when stdout is closed).
+    /// To check for errors, use [`Display::write_to`] instead.
     pub fn print(&self) {
         let stdout = io::stdout();
         let mut lock = stdout.lock();

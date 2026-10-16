@@ -1,7 +1,32 @@
+//! Single-line text.
+
 use crate::display::colour::Colour;
 use crate::display::display::Display;
 use crate::graphics::Graphic;
 
+/// A single line of text.
+///
+/// Each character occupies one display cell, laid out left to right from the
+/// position. Characters are counted as `char`s, not bytes, so multi-byte
+/// characters such as `é` take one cell. Characters that fall outside the
+/// display are clipped.
+///
+/// # Example
+///
+/// ```
+/// use terminal_graphics::graphics::Graphic;
+/// use terminal_graphics::{Colour, Display, Text};
+///
+/// let text = Text::from(1, 0, String::from("abc"), Colour::Red, Colour::Blue);
+///
+/// let mut display = Display::new(5, 1);
+/// text.draw(&mut display);
+///
+/// assert_eq!(text.get_position(), (1, 0));
+/// assert_eq!(display.pixel_mut(0, 0).unwrap().character(), ' ');
+/// assert_eq!(display.pixel_mut(1, 0).unwrap().character(), 'a');
+/// assert_eq!(display.pixel_mut(3, 0).unwrap().character(), 'c');
+/// ```
 pub struct Text {
     pos_x: isize,
     pos_y: isize,
@@ -10,6 +35,8 @@ pub struct Text {
     background: Colour,
 }
 impl Text {
+    /// Creates empty text at `(0, 0)`. The text colour is black and the
+    /// background is white. Drawing it changes nothing.
     pub fn new() -> Text {
         Text {
             pos_x: 0,
@@ -20,6 +47,11 @@ impl Text {
         }
     }
 
+    /// Creates text starting at `(pos_x, pos_y)`.
+    ///
+    /// - `text`: the characters to show. One character per cell.
+    /// - `colour`: the foreground (character) colour.
+    /// - `background`: the background colour of each cell.
     pub fn from(
         pos_x: isize,
         pos_y: isize,
@@ -36,11 +68,13 @@ impl Text {
         }
     }
 
+    /// Replaces the text with `text`. The position and colours are unchanged.
     pub fn set_text(&mut self, text: String) {
         self.text = text;
     }
 }
 impl Graphic for Text {
+    /// Draws each character to the cell to its right, on the same row.
     fn draw(&self, display: &mut Display) {
         let x = self.pos_x;
         let y = self.pos_y;
@@ -61,12 +95,15 @@ impl Graphic for Text {
         (self.pos_x, self.pos_y)
     }
 
+    /// Moves the start of the text. The first character is drawn at
+    /// `(pos_x, pos_y)`.
     fn set_position(&mut self, pos_x: isize, pos_y: isize) {
         self.pos_x = pos_x;
         self.pos_y = pos_y;
     }
 }
 
+/// Equivalent to [`Text::new`].
 impl Default for Text {
     fn default() -> Text {
         Text::new()

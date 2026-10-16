@@ -1,7 +1,20 @@
+//! A two-cell-wide ball with a floating point position and speed.
+
 use crate::display::colour::Colour;
 use crate::display::display::Display;
 use crate::graphics::Graphic;
 
+/// A moving block that is 2 cells wide and 1 cell high.
+///
+/// The position and speed are `f32`, so a ball can move by fractions of a
+/// cell per step. Positions are rounded to the nearest cell when drawn and
+/// when read with `get_position`. The ball is drawn at the rounded position
+/// `(x, y)` and `(x + 1, y)`, and `get_area` returns those two cells.
+///
+/// - [`update_speeds`](crate::graphics::Graphic::update_speeds) multiplies each
+///   speed by the given factor. Use a negative factor to reverse a direction.
+/// - [`update_position`](crate::graphics::Graphic::update_position) adds the
+///   current speed to the position. Call it once per animation frame.
 pub struct Ball {
     pos_x: f32,
     pos_y: f32,
@@ -10,6 +23,26 @@ pub struct Ball {
     colour: Colour,
 }
 impl Ball {
+    /// Creates a ball.
+    ///
+    /// - `pos_x`, `pos_y`: position of the left cell, in display cells.
+    ///   Fractional values are allowed and are rounded when drawn.
+    /// - `speed_x`, `speed_y`: distance added to the position on each call to
+    ///   `update_position`, in cells.
+    /// - `colour`: the background colour of the two cells. The characters are
+    ///   spaces, so the colour is what is seen.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use terminal_graphics::graphics::Graphic;
+    /// use terminal_graphics::{shapes::Ball, Colour};
+    ///
+    /// let mut ball = Ball::new(2.0, 3.0, 1.0, -1.0, Colour::Red);
+    /// ball.update_position();
+    /// assert_eq!(ball.get_position(), (3, 2));
+    /// assert_eq!(ball.get_area(), vec![(3, 2), (4, 2)]);
+    /// ```
     pub fn new(pos_x: f32, pos_y: f32, speed_x: f32, speed_y: f32, colour: Colour) -> Ball {
         Ball {
             pos_x,
@@ -21,7 +54,7 @@ impl Ball {
     }
 }
 impl Graphic for Ball {
-    /// Draw method for the Rectangle
+    /// Draws the two cells of the ball, at its rounded position.
     fn draw(&self, display: &mut Display) {
         // starting at (x,y), draw the rectangle onto the display
         let x = self.pos_x.round() as isize;
@@ -30,26 +63,34 @@ impl Graphic for Ball {
         display.set_pixel(x + 1, y, ' ', Colour::White, self.colour);
     }
 
+    /// Returns the rounded `(x, y)` position of the left cell.
     fn get_position(&self) -> (isize, isize) {
         (self.pos_x.round() as isize, self.pos_y.round() as isize)
     }
 
+    /// Sets the position to the whole cell `(pos_x, pos_y)`, discarding any
+    /// fractional part. The speed is unchanged.
     fn set_position(&mut self, pos_x: isize, pos_y: isize) {
         self.pos_x = pos_x as f32;
         self.pos_y = pos_y as f32;
     }
 
+    /// Returns the two cells covered by the ball: its rounded position and the
+    /// cell to its right.
     fn get_area(&self) -> Vec<(isize, isize)> {
         let (pos_x, pos_y) = self.get_position();
 
         vec![(pos_x, pos_y), (pos_x + 1, pos_y)]
     }
 
+    /// Multiplies the horizontal and vertical speeds by `x` and `y`. A negative
+    /// factor reverses that direction.
     fn update_speeds(&mut self, x: f32, y: f32) {
         self.speed_x *= x;
         self.speed_y *= y;
     }
 
+    /// Adds the current speed to the position. Call once per animation frame.
     fn update_position(&mut self) {
         self.pos_x += self.speed_x;
         self.pos_y += self.speed_y;

@@ -49,6 +49,6 @@ cargo llvm-cov --fail-under-lines 90            # coverage gate (CI)
 
 ## Conventions
 
-- Edition 2021, `#![forbid(unsafe_code)]`.
+- Edition 2021, `#![forbid(unsafe_code)]`, `#![warn(missing_docs)]`: every public item gets a `///` doc comment, with a runnable example where it helps (doc-tests count as tests; CI builds with warnings as errors).
 - Keep the public API backwards compatible unless the change is called out.
 - Warnings are errors in CI (`RUSTFLAGS=-D warnings`).

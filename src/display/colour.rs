@@ -1,36 +1,63 @@
-/// The Colour enum is used to set the colours in the Terminal
+//! The 16 ANSI terminal colours and conversions between them.
+
+/// The Colour enum is used to set the colours in the terminal.
+///
+/// There are 16 colours: the 8 standard ANSI colours, and a bright version of
+/// each. Use them as the foreground or background of a pixel, for example
+/// with [`Display::set_pixel`](crate::display::display::Display::set_pixel).
 ///
 /// The available colours come from the ANSI_escape_codes
 /// <https://en.wikipedia.org/wiki/ANSI_escape_code#Colors>
-
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Colour {
+    /// Standard black.
     Black,
+    /// Standard red.
     Red,
+    /// Standard green.
     Green,
+    /// Standard yellow.
     Yellow,
+    /// Standard blue.
     Blue,
+    /// Standard magenta.
     Magenta,
+    /// Standard cyan.
     Cyan,
+    /// Standard white.
     White,
+    /// Bright black (grey).
     BrightBlack,
+    /// Bright red.
     BrightRed,
+    /// Bright green.
     BrightGreen,
+    /// Bright yellow.
     BrightYellow,
+    /// Bright blue.
     BrightBlue,
+    /// Bright magenta.
     BrightMagenta,
+    /// Bright cyan.
     BrightCyan,
+    /// Bright white.
     BrightWhite,
 }
 
 impl Colour {
-    /// Get the enum value from a string
+    /// Get the enum value from a name.
+    ///
+    /// The name must match a variant exactly, for example `"BrightRed"`. An
+    /// unknown name does not panic; it returns [`Colour::White`].
     ///
     /// ```
     /// use terminal_graphics::Colour;
     ///
     /// let black = Colour::of("Black");
     /// assert_eq!(Colour::Black, black);
+    ///
+    /// // unknown names fall back to White
+    /// assert_eq!(Colour::of("Purple"), Colour::White);
     /// ```
     pub fn of(colour: &str) -> Colour {
         match colour {
@@ -54,6 +81,16 @@ impl Colour {
         }
     }
 
+    /// Get the name of the colour, for example `"Red"`.
+    ///
+    /// This is the inverse of [`Colour::of`]: `Colour::of(c.to_str()) == c`
+    /// for every colour.
+    ///
+    /// ```
+    /// use terminal_graphics::Colour;
+    ///
+    /// assert_eq!(Colour::BrightCyan.to_str(), "BrightCyan");
+    /// ```
     pub fn to_str(&self) -> &str {
         match *self {
             Colour::Black => "Black",
@@ -105,7 +142,12 @@ impl Colour {
     }
 
     /// Get the enum value from an RGB value.
-    /// Finds the closest colour using euclidean distance.
+    ///
+    /// Finds the closest colour using euclidean distance, comparing against
+    /// the values returned by [`Colour::get_rbg`]. Ties go to the colour that
+    /// comes first in [`Colour::variants`].
+    ///
+    /// Each of `red`, `green` and `blue` is in the range 0 to 255.
     ///
     /// ```
     /// use terminal_graphics::Colour;
@@ -139,8 +181,13 @@ impl Colour {
         closest
     }
 
-    /// Gets the values for the colour:
-    /// from <https://en.wikipedia.org/wiki/ANSI_escape_code#Colors>
+    /// Gets the ANSI SGR codes for the colour, as `(foreground, background)`.
+    ///
+    /// The foreground code is in the range 30 to 37 or 90 to 97. The
+    /// background code is always 10 more than the foreground code. These are
+    /// the numbers used inside an escape sequence such as `ESC[31m`.
+    ///
+    /// See <https://en.wikipedia.org/wiki/ANSI_escape_code#Colors>
     ///
     /// ```
     /// use terminal_graphics::Colour;
@@ -172,17 +219,21 @@ impl Colour {
         }
     }
 
-    /// Gets the RBG tiple for the colour.
+    /// Gets the RGB triple for the colour, in the order `(red, green, blue)`.
+    ///
+    /// Despite the name `get_rbg` (red, blue, green), the tuple is always
+    /// `(red, green, blue)`, with each channel in the range 0 to 255. These
+    /// are approximate values for the colours, used by [`Colour::from_rgb`].
     ///
     /// ```
     /// use terminal_graphics::Colour;
     ///
     /// let cyan = Colour::Cyan;
-    /// let (r, b, g) = cyan.get_rbg();
+    /// let (r, g, b) = cyan.get_rbg();
     ///
     /// assert_eq!(r, 0);
-    /// assert_eq!(b, 128);
     /// assert_eq!(g, 128);
+    /// assert_eq!(b, 128);
     /// ```
     pub fn get_rbg(&self) -> (u8, u8, u8) {
         match *self {
