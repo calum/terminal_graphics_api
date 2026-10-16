@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Faster rendering: `Display::render` now sets colours only when they change
+  along a row, resets them at the end of each row, and preallocates its output.
+  A frame is about 10x smaller and 10-25x faster to render (see the README's
+  Performance section). The text on screen is identical; only the escape
+  sequences differ, so code that matches exact escape codes in `render` output
+  (for example per-cell `\x1b[..m<char>\x1b[0;0m`) needs updating.
+- Added `cargo bench` rendering benchmarks (`benches/render.rs`, `std` only).
+- Added [`llms.txt`](llms.txt): a summary of the crate, when to use it and a
+  working example, written for AI coding agents (kept in sync with the API by
+  `tests/llms.rs`).
+- Clearer positioning: the crate description, keywords, README and crate docs
+  now say it draws on a terminal's character grid and is not an image
+  protocol. The crate name is unchanged.
+
 - Added a website at <https://calum.github.io/terminal_graphics_api/> with a
   playable Snake game built with the library and compiled to WebAssembly
   (`examples/web.rs`). It is generated from Rust (`examples/build_site.rs`) and

@@ -26,7 +26,7 @@ fn render_includes_pixel_characters_and_colour_codes() {
 
     let out = display.render();
 
-    assert!(out.contains("\x1b[31;44mx\x1b[0;0m"), "got {:?}", out);
+    assert!(out.contains("\x1b[31;44mx"), "got {:?}", out);
     assert_eq!(strip_ansi(&out), " x ");
 }
 
@@ -140,4 +140,54 @@ fn an_animation_loop_moves_balls_and_redraws_cleanly() {
             .collect();
         assert_eq!(red, vec![frame, frame + 1]);
     }
+}
+
+#[test]
+fn a_run_of_same_coloured_cells_sets_the_colours_once() {
+    let mut display = Display::new(5, 2);
+    for y in 0..2 {
+        for x in 0..5 {
+            display.set_pixel(x, y, '#', Colour::Red, Colour::Blue);
+        }
+    }
+
+    let out = display.render();
+
+    // once per row, not once per cell
+    assert_eq!(out.matches("\x1b[31;44m").count(), 2, "got {:?}", out);
+    assert_eq!(out.matches("#####").count(), 2, "got {:?}", out);
+}
+
+#[test]
+fn a_colour_change_inside_a_row_sets_the_new_colours() {
+    let mut display = Display::new(3, 1);
+    display.set_pixel(0, 0, 'a', Colour::Red, Colour::Blue);
+    display.set_pixel(1, 0, 'b', Colour::Red, Colour::Blue);
+    display.set_pixel(2, 0, 'c', Colour::Green, Colour::Blue);
+
+    let out = display.render();
+
+    assert!(out.contains("\x1b[31;44mab\x1b[32;44mc"), "got {:?}", out);
+}
+
+#[test]
+fn colours_are_reset_before_each_row_is_erased() {
+    // erasing with a colour still set would paint the rest of the line in it
+    let mut display = Display::new(2, 2);
+    display.set_pixel(1, 0, 'x', Colour::Red, Colour::Blue);
+
+    let out = display.render();
+
+    assert_eq!(out.matches("\x1b[0;0m\x1b[K").count(), 2, "got {:?}", out);
+}
+
+#[test]
+fn colours_do_not_carry_over_from_one_row_to_the_next() {
+    let mut display = Display::new(1, 2);
+    display.set_pixel(0, 0, 'a', Colour::Red, Colour::Blue);
+    display.set_pixel(0, 1, 'b', Colour::Red, Colour::Blue);
+
+    let out = display.render();
+
+    assert_eq!(out.matches("\x1b[31;44m").count(), 2, "got {:?}", out);
 }

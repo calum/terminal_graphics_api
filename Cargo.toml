@@ -4,13 +4,13 @@ version = "1.0.0"
 authors = ["calum"]
 edition = "2021"
 readme = "README.md"
-keywords = ["terminal", "graphics", "api"]
+keywords = ["terminal", "graphics", "ansi", "tui", "animation"]
 categories = ["command-line-interface", "graphics"]
 rust-version = "1.70"
 repository = "https://github.com/calum/terminal_graphics_api"
 homepage = "https://calum.github.io/terminal_graphics_api/"
 license = "MIT OR Apache-2.0"
-description = "A basic graphics api for the terminal with an example application."
+description = "Zero-dependency Rust library for drawing shapes, text and animations in a terminal character grid with ANSI colours."
 exclude = ["assets/*", ".github/*", "CLAUDE.md", "examples/web.rs", "examples/build_site.rs"]
 
 # The game on the project website: compiled to WebAssembly by the Pages workflow.
@@ -19,3 +19,8 @@ name = "web"
 path = "examples/web.rs"
 crate-type = ["cdylib"]
 test = true
+
+# Rendering benchmarks: `cargo bench`. Plain `std::time`, so no dependencies.
+[[bench]]
+name = "render"
+harness = false

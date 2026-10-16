@@ -159,17 +159,35 @@ impl Display {
     /// assert!(output.contains('A'));
     /// ```
     pub fn render(&self) -> String {
-        let mut out = String::new();
         if self.height == 0 {
-            return out;
+            return String::new();
         }
+
+        // about 4 bytes per cell covers a typical frame, so it rarely regrows
+        let mut out = String::with_capacity(self.pixels.len() * 4 + self.height * 16);
 
         // move the cursor to the top left corner
         let _ = write!(out, "\x1b[{}F", self.height);
 
         for row in 0..self.height {
+            // the colours currently set in the terminal; each row starts reset
+            let mut current: Option<(Colour, Colour)> = None;
+
             for pixel in &self.pixels[row * self.width..(row + 1) * self.width] {
-                let _ = write!(out, "{pixel}");
+                // only send colour codes when they change along the row
+                let colours = (pixel.colour(), pixel.background());
+                if current != Some(colours) {
+                    let (colour, _) = colours.0.ansi_codes();
+                    let (_, background) = colours.1.ansi_codes();
+                    let _ = write!(out, "\x1b[{colour};{background}m");
+                    current = Some(colours);
+                }
+                out.push(pixel.character());
+            }
+
+            // reset the colours so erasing does not paint the rest of the line
+            if current.is_some() {
+                out.push_str("\x1b[0;0m");
             }
 
             // erase the rest of the line

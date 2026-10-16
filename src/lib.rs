@@ -1,4 +1,8 @@
-//! A zero-dependency, 100% Rust graphics API for drawing in a terminal.
+//! Draw shapes, text and animations in a terminal's character grid with ANSI
+//! colours. Zero dependencies, 100% Rust.
+//!
+//! It works on cells (one character plus foreground and background colours),
+//! not pixels: it is not an image protocol such as Kitty, Sixel or iTerm2.
 //!
 //! Try it in your browser, with a Snake game built only with this crate:
 //! <https://calum.github.io/terminal_graphics_api/>

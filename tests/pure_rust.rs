@@ -5,7 +5,13 @@ use std::path::Path;
 
 /// Extensions allowed in the repo. Anything else (.py, .js, .sh, .c, ...) fails the build.
 const ALLOWED_EXTENSIONS: &[&str] = &["rs", "toml", "md", "yml", "png", "gif", "lock"];
-const ALLOWED_FILE_NAMES: &[&str] = &[".gitignore", ".gitattributes", "LICENSE", "CLAUDE.md"];
+const ALLOWED_FILE_NAMES: &[&str] = &[
+    ".gitignore",
+    ".gitattributes",
+    "LICENSE",
+    "CLAUDE.md",
+    "llms.txt",
+];
 const IGNORED_DIRS: &[&str] = &["target"];
 
 fn walk(dir: &Path, found: &mut Vec<String>) {
