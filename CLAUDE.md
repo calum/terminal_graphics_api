@@ -50,6 +50,7 @@ cargo llvm-cov --fail-under-lines 90            # coverage gate (CI)
   `shapes/` (`Rect`, `Ball`)
 - `examples/demo.rs` - animated showcase of every feature (`cargo run --example demo`; `-- --frames N --no-delay` for tests)
 - `tests/` - integration (`rendering`, `colour`, `robustness`), e2e and repo-hygiene tests
+- `llms.txt` - crate summary for AI agents; `tests/llms.rs` checks it against the API
 - `README.md` - its ```` ```rust ```` blocks are compiled as doc-tests, so keep them working
 - `CHANGELOG.md` - every user-visible change goes here, breaking ones with a migration row
 

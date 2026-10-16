@@ -1,0 +1,61 @@
+# terminal_graphics
+
+> A zero-dependency Rust library for drawing shapes, text and animations in a terminal's character grid with ANSI colours. Add it with `cargo add terminal_graphics`.
+
+It draws into an in-memory grid of cells (one character plus a foreground and a background colour), then prints the grid in place. Anything drawn outside the grid is clipped, and the library never panics on out-of-range input. It has no dependencies and no unsafe code (MSRV 1.70).
+
+## Use it when
+
+- You want coloured text, boxes, simple shapes or animation in a terminal with very little code and no extra crates.
+- You are writing a small game, demo, dashboard or visualisation that redraws the screen every frame.
+- You need output you can test: `Display::render()` returns the ANSI string without touching stdout.
+
+## Do not use it when
+
+- You need images in the terminal (Kitty, Sixel, iTerm2 protocols). This crate is cell based, not pixel based.
+- You need widgets, layout, text input or mouse and keyboard events. Use a TUI framework for that.
+- You need 24-bit colour. It has the 16 ANSI colours, and `Colour::from_rgb` picks the nearest one.
+
+## Core types
+
+- `Display`: the grid. `Display::new(width, height)`, `set_pixel(x, y, char, fg, bg)`, `print()`, `render()`, `write_to(writer)`, `reserve_space()`.
+- `Pixel`: one cell. `Colour`: the 16 ANSI colours (`Colour::Red`, `Colour::BrightBlue`, ...).
+- `Graphic`: trait for anything drawable (`draw(&self, &mut Display)`, optional `update` and `contains`).
+- `Graphics`: named collection of graphics. `add`, `get_mut`, `move_by`, `remove`, `update`, `draw`, `show`.
+- `Text`, `Container` (a bordered box holding one graphic), `shapes::Rect`, `shapes::Ball` (moves by its speed on `update`).
+- `terminal_graphics::prelude::*` imports all of them.
+
+Coordinates are `(x, y)` with `(0, 0)` at the top left, `x` to the right and `y` down.
+
+## Example: an animated ball
+
+```rust
+use std::{thread::sleep, time::Duration};
+use terminal_graphics::prelude::*;
+
+fn main() -> std::io::Result<()> {
+    let mut display = Display::new(40, 8);
+    let mut graphics = Graphics::new();
+    graphics
+        .add("sky", Rect::new(0, 0, 40, 8, Colour::Blue))
+        .add("ball", Ball::new(0.0, 3.0, 1.0, 0.0, Colour::BrightYellow))
+        .add("label", Text::new(1, 0, "A ball, moving right", Colour::White, Colour::Blue));
+
+    display.reserve_space()?; // once, before the first frame
+    for _ in 0..38 {
+        graphics.update(); // moves every Ball by its speed
+        graphics.show(&mut display)?; // clear, draw everything, print in place
+        sleep(Duration::from_millis(50));
+    }
+    Ok(())
+}
+```
+
+Call `display.reserve_space()` once before the first frame; each frame moves the cursor up over the previous one.
+
+## Links
+
+- API documentation: https://docs.rs/terminal_graphics
+- Crate: https://crates.io/crates/terminal_graphics
+- Source and issues: https://github.com/calum/terminal_graphics_api
+- Playable demo (a Snake game built with the crate): https://calum.github.io/terminal_graphics_api/

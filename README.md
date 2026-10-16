@@ -3,8 +3,10 @@
 [![docs.rs](https://docs.rs/terminal_graphics/badge.svg)](https://docs.rs/terminal_graphics)
 [![License](https://img.shields.io/crates/l/terminal_graphics.svg)](#license)
 
-# Rust Terminal Graphics API
-A zero dependencies, 100% Rust graphics API for the terminal.
+# terminal_graphics
+Draw shapes, text and animations in a terminal's character grid with ANSI colours. Zero dependencies, 100% Rust.
+
+It works on **cells**: each cell holds one character, a foreground colour and a background colour, and you draw into an in-memory grid that is printed in place. It is not an image protocol (Kitty, Sixel, iTerm2) and not a widget toolkit; for those, look elsewhere.
 
 **[Try it in your browser: play a Snake game built with this library](https://calum.github.io/terminal_graphics_api/)**
 
@@ -91,6 +93,19 @@ fn main() -> std::io::Result<()> {
 
 Use `graphics.get_mut("ball")` to change a graphic, `graphics.move_by("label", 1, 0)` to nudge one, and `graphics.remove("ball")` to take one away. Implement the `Graphic` trait to draw your own shapes; `contains(x, y)` tests a cell against a graphic, which is handy for collisions. `use terminal_graphics::prelude::*;` imports everything at once, and the [API documentation](https://docs.rs/terminal_graphics) covers each type.
 
+## Performance
+
+`cargo bench` runs [`benches/render.rs`](benches/render.rs), which uses only `std`. A frame is the cost of turning a `Display` into ANSI output. Colour codes are only sent when the colours change along a row, so uniform and slowly changing frames are small. Numbers from one machine (Windows 11, release build); yours will differ, so run it yourself:
+
+| Frame (80x24)             | Before     | Now      |
+|---------------------------|-----------:|---------:|
+| `render`, one colour      | 83 us      | 9 us     |
+| `render`, 16-colour gradient | 196 us  | 12 us    |
+| update + draw + write     | 203 us     | 17 us    |
+| output per frame          | 29 KB      | 2.5-3 KB |
+
+At 200x60 a `render` takes 43-51 us and writes 14 KB (it was about 1.2 ms and 181 KB). A real terminal parses every byte you send, so the bytes per frame usually matter more than the CPU time.
+
 ## Upgrading from 0.x
 
 Version 1.0 renamed and reshaped much of the API. See [CHANGELOG.md](CHANGELOG.md) for the full list and a before/after migration guide.
@@ -99,6 +114,7 @@ Version 1.0 renamed and reshaped much of the API. See [CHANGELOG.md](CHANGELOG.m
 - API documentation: https://docs.rs/terminal_graphics
 - Website (with a playable game): https://calum.github.io/terminal_graphics_api/
 - Source: https://github.com/calum/terminal_graphics_api
+- For AI coding agents: [llms.txt](llms.txt)
 - Issues: https://github.com/calum/terminal_graphics_api/issues
 
 ## Example application using the API
