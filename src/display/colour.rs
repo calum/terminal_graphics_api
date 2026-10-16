@@ -1,3 +1,5 @@
+//! The 16 ANSI terminal colours and conversions between them.
+
 /// The Colour enum is used to set the colours in the terminal.
 ///
 /// There are 16 colours: the 8 standard ANSI colours, and a bright version of

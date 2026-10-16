@@ -1,3 +1,5 @@
+//! The [`Display`]: an in-memory grid of pixels that is rendered to the terminal.
+
 use crate::display::colour::Colour;
 use crate::display::pixel::*;
 use std::io::{self, Write};

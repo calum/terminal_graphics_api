@@ -57,6 +57,7 @@
 //!
 //! Run the bundled example with `cargo run --example demo`.
 #![forbid(unsafe_code)]
+#![warn(missing_docs)]
 
 pub mod display;
 pub mod graphics;

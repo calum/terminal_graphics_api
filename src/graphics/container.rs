@@ -1,3 +1,5 @@
+//! A bordered box that holds another graphic.
+
 use crate::display::colour::Colour;
 use crate::display::display::Display;
 use crate::graphics::Graphic;

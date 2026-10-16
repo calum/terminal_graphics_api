@@ -1,3 +1,5 @@
+//! A single terminal cell: one character with a foreground and background colour.
+
 use crate::display::colour::Colour;
 use std::fmt;
 

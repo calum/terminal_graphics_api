@@ -1,3 +1,5 @@
+//! Single-line text.
+
 use crate::display::colour::Colour;
 use crate::display::display::Display;
 use crate::graphics::Graphic;

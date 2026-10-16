@@ -1,3 +1,5 @@
+//! A two-cell-wide ball with a floating point position and speed.
+
 use crate::display::colour::Colour;
 use crate::display::display::Display;
 use crate::graphics::Graphic;
