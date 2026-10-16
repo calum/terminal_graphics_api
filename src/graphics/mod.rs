@@ -8,7 +8,7 @@ pub mod container;
 pub mod shapes;
 pub mod text;
 
-use display::display::Display;
+use crate::display::display::Display;
 
 use std::collections::HashMap;
 
@@ -45,7 +45,7 @@ pub trait Graphic {
 }
 
 pub struct Graphics {
-    graphics: HashMap<String, Box<Graphic>>,
+    graphics: HashMap<String, Box<dyn Graphic>>,
 }
 impl Graphics {
     pub fn new() -> Graphics {
@@ -69,17 +69,17 @@ impl Graphics {
     }
 
     /// Add a graphic with a name
-    pub fn add_named(&mut self, name: &str, graphic: Box<Graphic>) {
+    pub fn add_named(&mut self, name: &str, graphic: Box<dyn Graphic>) {
         self.graphics.insert(name.to_string(), graphic);
     }
 
     /// get a mutable reference to a graphic
-    pub fn get_mut_named(&mut self, name: &str) -> Option<&mut Box<Graphic>> {
+    pub fn get_mut_named(&mut self, name: &str) -> Option<&mut Box<dyn Graphic>> {
         self.graphics.get_mut(name)
     }
 
     /// get a reference to a graphic
-    pub fn get_named(&self, name: &str) -> Option<&Box<Graphic>> {
+    pub fn get_named(&self, name: &str) -> Option<&Box<dyn Graphic>> {
         self.graphics.get(name)
     }
 

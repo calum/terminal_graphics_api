@@ -1,5 +1,3 @@
-extern crate terminal_graphics;
-
 use terminal_graphics::graphics::Graphic;
 use terminal_graphics::{Colour, Container, Display, Text};
 

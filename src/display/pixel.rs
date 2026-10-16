@@ -1,4 +1,4 @@
-use display::colour::Colour;
+use crate::display::colour::Colour;
 
 pub type Pixels = Vec<Pixel>;
 

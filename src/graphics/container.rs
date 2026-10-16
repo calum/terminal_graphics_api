@@ -1,6 +1,6 @@
-use display::colour::Colour;
-use display::display::Display;
-use graphics::Graphic;
+use crate::display::colour::Colour;
+use crate::display::display::Display;
+use crate::graphics::Graphic;
 
 /// The Container graphic can be placed
 /// anywhere in the Display and holds
@@ -14,7 +14,7 @@ pub struct Container<'a> {
     pos_y: isize,
     width: isize,
     height: isize,
-    content: Option<&'a mut Graphic>,
+    content: Option<&'a mut dyn Graphic>,
     border: Colour,
     background: Colour,
 }
@@ -38,10 +38,10 @@ impl<'a> Container<'a> {
         pos_y: isize,
         width: isize,
         height: isize,
-        graphic: &'a mut Graphic,
+        graphic: &'a mut dyn Graphic,
         border: Colour,
         background: Colour,
-    ) -> Container {
+    ) -> Container<'a> {
         let (x, y) = graphic.get_position();
 
         // move relative to the container
@@ -59,7 +59,7 @@ impl<'a> Container<'a> {
         }
     }
 
-    pub fn set_content(&mut self, graphic: &'a mut Graphic) {
+    pub fn set_content(&mut self, graphic: &'a mut dyn Graphic) {
         let (x, y) = graphic.get_position();
 
         // move relative to the container

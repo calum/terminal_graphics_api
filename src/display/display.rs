@@ -1,5 +1,5 @@
-use display::colour::Colour;
-use display::pixel::*;
+use crate::display::colour::Colour;
+use crate::display::pixel::*;
 
 pub struct Display {
     rows: Vec<Pixels>,
@@ -45,7 +45,7 @@ impl Display {
     /// Clears the display
     pub fn clear(&mut self) {
         for pixels in &mut self.rows {
-            for mut pixel in pixels {
+            for pixel in pixels {
                 pixel.clear();
             }
         }

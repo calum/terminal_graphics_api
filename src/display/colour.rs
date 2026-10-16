@@ -127,9 +127,9 @@ impl Colour {
             let red_2 = red as f64;
             let blue_2 = blue as f64;
             let green_2 = green as f64;
-            let this_distance = ((red_1 - red_2).powi(2) + (green_1 - green_2).powi(2)
-                + (blue_1 - blue_2).powi(2))
-                .sqrt();
+            let this_distance =
+                ((red_1 - red_2).powi(2) + (green_1 - green_2).powi(2) + (blue_1 - blue_2).powi(2))
+                    .sqrt();
             if this_distance < distance {
                 closest = Colour::of(colour.to_str());
                 distance = this_distance;

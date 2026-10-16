@@ -1,6 +1,6 @@
-use display::colour::Colour;
-use display::display::Display;
-use graphics::Graphic;
+use crate::display::colour::Colour;
+use crate::display::display::Display;
+use crate::graphics::Graphic;
 
 pub struct Text {
     pos_x: isize,

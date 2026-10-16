@@ -8,8 +8,8 @@ pub mod pixel;
 
 #[cfg(test)]
 mod tests {
-    use display::colour::Colour;
-    use display::display::Display;
+    use crate::display::colour::Colour;
+    use crate::display::display::Display;
 
     #[test]
     fn it_works() {

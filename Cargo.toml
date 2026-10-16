@@ -2,6 +2,7 @@
 name = "terminal_graphics"
 version = "0.1.5"
 authors = ["calum"]
+edition = "2021"
 readme = "README.md"
 keywords = ["terminal", "graphics", "api"]
 repository = "https://github.com/calum/terminal_graphics_api"

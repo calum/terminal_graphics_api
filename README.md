@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/calum/terminal_graphics_api.svg?branch=master)](https://travis-ci.org/calum/terminal_graphics_api)
+[![CI](https://github.com/calum/terminal_graphics_api/actions/workflows/ci.yml/badge.svg)](https://github.com/calum/terminal_graphics_api/actions/workflows/ci.yml)
 
 # Rust Terminal Graphics API
 A zero dependencies, 100% rust, Graphics API for use in a linux terminal.
