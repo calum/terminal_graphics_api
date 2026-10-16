@@ -1,3 +1,5 @@
+//! Draws a titled container to the terminal. Run with `cargo run --example demo`.
+
 use terminal_graphics::graphics::Graphic;
 use terminal_graphics::{Colour, Container, Display, Text};
 
