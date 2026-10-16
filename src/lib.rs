@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 pub mod display;
 pub mod graphics;
 
@@ -8,9 +10,3 @@ pub use display::display::Display;
 pub use graphics::container::Container;
 pub use graphics::shapes;
 pub use graphics::text::Text;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {}
-}

@@ -131,7 +131,7 @@ impl Colour {
                 ((red_1 - red_2).powi(2) + (green_1 - green_2).powi(2) + (blue_1 - blue_2).powi(2))
                     .sqrt();
             if this_distance < distance {
-                closest = Colour::of(colour.to_str());
+                closest = *colour;
                 distance = this_distance;
             }
         }
@@ -194,7 +194,7 @@ impl Colour {
             Colour::Magenta => (128, 0, 128),
             Colour::Cyan => (0, 128, 128),
             Colour::White => (128, 128, 128),
-            Colour::BrightBlack => (85, 0, 0),
+            Colour::BrightBlack => (85, 85, 85),
             Colour::BrightRed => (255, 0, 0),
             Colour::BrightGreen => (0, 255, 0),
             Colour::BrightYellow => (255, 255, 0),
@@ -203,5 +203,33 @@ impl Colour {
             Colour::BrightCyan => (0, 255, 255),
             Colour::BrightWhite => (255, 255, 255),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn variants_are_all_distinct() {
+        let v = Colour::variants();
+        for (i, a) in v.iter().enumerate() {
+            for b in v.iter().skip(i + 1) {
+                assert_ne!(a, b);
+            }
+        }
+    }
+
+    #[test]
+    fn from_rgb_picks_the_nearest_colour() {
+        assert_eq!(Colour::from_rgb(250, 10, 10), Colour::BrightRed);
+        assert_eq!(Colour::from_rgb(10, 10, 120), Colour::Blue);
+        assert_eq!(Colour::from_rgb(90, 90, 90), Colour::BrightBlack);
+    }
+
+    #[test]
+    fn from_rgb_breaks_ties_towards_the_earlier_variant() {
+        // equidistant from Black (0,0,0) and Red (128,0,0)
+        assert_eq!(Colour::from_rgb(64, 0, 0), Colour::Black);
     }
 }

@@ -10,8 +10,6 @@ pub mod text;
 
 use crate::display::display::Display;
 
-use std::collections::HashMap;
-
 // All graphics should implement this trait
 pub trait Graphic {
     fn draw(&self, display: &mut Display);
@@ -44,46 +42,157 @@ pub trait Graphic {
     fn update_position(&mut self) {}
 }
 
+/// A collection of named graphics, drawn in the order they were added
+/// (later graphics are drawn on top of earlier ones).
+#[derive(Default)]
 pub struct Graphics {
-    graphics: HashMap<String, Box<dyn Graphic>>,
+    graphics: Vec<(String, Box<dyn Graphic>)>,
 }
 impl Graphics {
     pub fn new() -> Graphics {
-        Graphics {
-            graphics: HashMap::new(),
-        }
+        Graphics::default()
     }
 
-    /// draw all the graphics to the display
+    /// clear the display, draw all the graphics to it and print it
     pub fn draw(&self, display: &mut Display) {
+        self.render_to(display);
+        display.print();
+    }
+
+    /// clear the display and draw all the graphics to it without printing
+    pub fn render_to(&self, display: &mut Display) {
         display.clear();
         for (_, graphic) in self.graphics.iter() {
             graphic.draw(display);
         }
-        display.print();
     }
 
-    /// move a graphic from its name
+    /// move a graphic from its name; does nothing if there is no such graphic
     pub fn move_named_graphic(&mut self, name: &str, dx: isize, dy: isize) {
-        self.get_mut_named(name).unwrap().move_position(dx, dy);
+        if let Some(graphic) = self.get_mut_named(name) {
+            graphic.move_position(dx, dy);
+        }
     }
 
-    /// Add a graphic with a name
+    /// Add a graphic with a name, replacing (in place) any graphic with the same name
     pub fn add_named(&mut self, name: &str, graphic: Box<dyn Graphic>) {
-        self.graphics.insert(name.to_string(), graphic);
+        match self.graphics.iter_mut().find(|(n, _)| n == name) {
+            Some(entry) => entry.1 = graphic,
+            None => self.graphics.push((name.to_string(), graphic)),
+        }
     }
 
     /// get a mutable reference to a graphic
     pub fn get_mut_named(&mut self, name: &str) -> Option<&mut Box<dyn Graphic>> {
-        self.graphics.get_mut(name)
+        self.graphics
+            .iter_mut()
+            .find(|(n, _)| n == name)
+            .map(|(_, g)| g)
     }
 
     /// get a reference to a graphic
+    #[allow(clippy::borrowed_box)]
     pub fn get_named(&self, name: &str) -> Option<&Box<dyn Graphic>> {
-        self.graphics.get(name)
+        self.graphics
+            .iter()
+            .find(|(n, _)| n == name)
+            .map(|(_, g)| g)
     }
 
     pub fn remove_named(&mut self, name: &str) {
-        let _ = self.graphics.remove(name);
+        self.graphics.retain(|(n, _)| n != name);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::display::colour::Colour;
+
+    struct Dot(isize, isize);
+    impl Graphic for Dot {
+        fn draw(&self, display: &mut Display) {
+            display.set_pixel(self.0, self.1, '.', Colour::Red, Colour::Black);
+        }
+        fn get_position(&self) -> (isize, isize) {
+            (self.0, self.1)
+        }
+        fn set_position(&mut self, x: isize, y: isize) {
+            self.0 = x;
+            self.1 = y;
+        }
+    }
+
+    #[test]
+    fn default_area_is_just_the_position() {
+        assert_eq!(Dot(2, 3).get_area(), vec![(2, 3)]);
+    }
+
+    #[test]
+    fn default_collision_only_hits_the_position() {
+        let d = Dot(2, 3);
+        assert!(d.check_collision(2, 3));
+        assert!(!d.check_collision(3, 2));
+    }
+
+    #[test]
+    fn default_move_position_adds_the_delta() {
+        let mut d = Dot(2, 3);
+        d.move_position(-5, 1);
+        assert_eq!(d.get_position(), (-3, 4));
+    }
+
+    #[test]
+    fn default_update_hooks_do_nothing() {
+        let mut d = Dot(2, 3);
+        d.update_speeds(9.0, 9.0);
+        d.update_position();
+        assert_eq!(d.get_position(), (2, 3));
+    }
+
+    #[test]
+    fn move_named_graphic_moves_only_that_graphic() {
+        let mut g = Graphics::new();
+        g.add_named("a", Box::new(Dot(0, 0)));
+        g.add_named("b", Box::new(Dot(5, 5)));
+        g.move_named_graphic("a", 1, 2);
+        assert_eq!(g.get_named("a").unwrap().get_position(), (1, 2));
+        assert_eq!(g.get_named("b").unwrap().get_position(), (5, 5));
+    }
+
+    #[test]
+    fn get_mut_named_allows_mutation_and_is_none_when_missing() {
+        let mut g = Graphics::new();
+        g.add_named("a", Box::new(Dot(0, 0)));
+        g.get_mut_named("a").unwrap().set_position(7, 7);
+        assert_eq!(g.get_named("a").unwrap().get_position(), (7, 7));
+        assert!(g.get_mut_named("nope").is_none());
+    }
+
+    #[test]
+    fn render_to_clears_stale_pixels_first() {
+        let mut g = Graphics::new();
+        g.add_named("a", Box::new(Dot(0, 0)));
+        let mut d = Display::new(2, 1);
+        d.set_pixel(1, 0, 'x', Colour::Red, Colour::Red);
+        g.render_to(&mut d);
+        assert_eq!(d.pixel_mut(1, 0).unwrap().character(), ' ');
+        assert_eq!(d.pixel_mut(0, 0).unwrap().character(), '.');
+    }
+
+    #[test]
+    fn remove_named_removes_only_that_graphic() {
+        let mut g = Graphics::new();
+        g.add_named("a", Box::new(Dot(0, 0)));
+        g.add_named("b", Box::new(Dot(1, 1)));
+        g.remove_named("a");
+        assert!(g.get_named("a").is_none());
+        assert!(g.get_named("b").is_some());
+    }
+
+    #[test]
+    fn draw_renders_and_prints_without_panicking() {
+        let g = Graphics::new();
+        g.draw(&mut Display::new(1, 1));
     }
 }
