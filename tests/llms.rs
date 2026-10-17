@@ -64,3 +64,26 @@ fn links_to_the_docs_and_the_crate() {
     assert!(text.contains("https://docs.rs/terminal_graphics"));
     assert!(text.contains("https://crates.io/crates/terminal_graphics"));
 }
+
+#[test]
+fn points_to_the_interactive_companion_for_keyboard_and_mouse_input() {
+    let text = llms();
+    assert!(text.contains("terminal_graphics_interactive"));
+    assert!(text.contains("https://github.com/calum/terminal_graphics_interactive"));
+    assert!(
+        !text.contains("mouse and keyboard events. Use a TUI framework"),
+        "mouse and keyboard input now has a better answer than a TUI framework"
+    );
+}
+
+#[test]
+fn the_readme_and_crate_docs_point_to_the_interactive_companion_too() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    for file in ["README.md", "src/lib.rs"] {
+        let text = fs::read_to_string(root.join(file)).unwrap();
+        assert!(
+            text.contains("terminal_graphics_interactive"),
+            "{file} does not mention terminal_graphics_interactive"
+        );
+    }
+}

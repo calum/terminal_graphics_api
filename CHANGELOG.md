@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Docs: the README, crate docs and `llms.txt` now point to the companion crate
+  [`terminal_graphics_interactive`](https://github.com/calum/terminal_graphics_interactive)
+  for keyboard and mouse input, and `llms.txt` no longer sends mouse and keyboard
+  questions to a TUI framework.
+
 ## 1.1.0
 
 - Faster rendering: `Display::render` now sets colours only when they change

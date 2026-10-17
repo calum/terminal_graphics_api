@@ -93,6 +93,14 @@ fn main() -> std::io::Result<()> {
 
 Use `graphics.get_mut("ball")` to change a graphic, `graphics.move_by("label", 1, 0)` to nudge one, and `graphics.remove("ball")` to take one away. Implement the `Graphic` trait to draw your own shapes; `contains(x, y)` tests a cell against a graphic, which is handy for collisions. `use terminal_graphics::prelude::*;` imports everything at once, and the [API documentation](https://docs.rs/terminal_graphics) covers each type.
 
+## Keyboard and mouse input
+
+This crate draws; it does not read input. To add keyboard and mouse events (clicks, drags, scrolling) for games, paint programs and other interactive programs, use the companion crate [`terminal_graphics_interactive`](https://github.com/calum/terminal_graphics_interactive). It builds on this one and re-exports it, so a single dependency is enough, and it works in Windows PowerShell, Linux, macOS and over SSH. It is early (0.1):
+
+```sh
+cargo add terminal_graphics_interactive
+```
+
 ## Performance
 
 `cargo bench` runs [`benches/render.rs`](benches/render.rs), which uses only `std`. A frame is the cost of turning a `Display` into ANSI output. Colour codes are only sent when the colours change along a row, so uniform and slowly changing frames are small. Numbers from one machine (Windows 11, release build); yours will differ, so run it yourself:
