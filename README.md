@@ -95,11 +95,10 @@ Use `graphics.get_mut("ball")` to change a graphic, `graphics.move_by("label", 1
 
 ## Keyboard and mouse input
 
-This crate draws; it does not read input. To add keyboard and mouse events (clicks, drags, scrolling) for games, paint programs and other interactive programs, use the companion crate [`terminal_graphics_interactive`](https://github.com/calum/terminal_graphics_interactive). It builds on this one and re-exports it, so a single dependency is enough, and it works in Windows PowerShell, Linux, macOS and over SSH. It is early (0.1) and not on crates.io yet:
+This crate draws; it does not read input. To add keyboard and mouse events (clicks, drags, scrolling) for games, paint programs and other interactive programs, use the companion crate [`terminal_graphics_interactive`](https://github.com/calum/terminal_graphics_interactive). It builds on this one and re-exports it, so a single dependency is enough, and it works in Windows PowerShell, Linux, macOS and over SSH. It is early (0.1):
 
-```toml
-[dependencies]
-terminal_graphics_interactive = { git = "https://github.com/calum/terminal_graphics_interactive" }
+```sh
+cargo add terminal_graphics_interactive
 ```
 
 ## Performance

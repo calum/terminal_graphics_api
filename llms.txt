@@ -56,9 +56,7 @@ Call `display.reserve_space()` once before the first frame; each frame moves the
 
 ## Keyboard and mouse input
 
-This crate only draws. For key presses, mouse clicks, drags and scrolling, use the companion crate `terminal_graphics_interactive`: it re-exports everything here, so one dependency and `use terminal_graphics_interactive::prelude::*;` is enough. It is early (0.1) and not yet on crates.io, so use it from git:
-
-    terminal_graphics_interactive = { git = "https://github.com/calum/terminal_graphics_interactive" }
+This crate only draws. For key presses, mouse clicks, drags and scrolling, use the companion crate `terminal_graphics_interactive`: it re-exports everything here, so one dependency and `use terminal_graphics_interactive::prelude::*;` is enough. It is early (0.1). Add it with `cargo add terminal_graphics_interactive`.
 
 It works in Windows PowerShell, Windows Terminal, Linux and macOS terminals, and over SSH. See https://github.com/calum/terminal_graphics_interactive for its own `llms.txt`.
 

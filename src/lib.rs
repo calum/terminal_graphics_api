@@ -77,8 +77,8 @@
 //! This crate draws; it does not read input. For key presses and mouse events
 //! (clicks, drags, scrolling) use the companion crate
 //! [`terminal_graphics_interactive`](https://github.com/calum/terminal_graphics_interactive),
-//! which builds on this one and re-exports it. It is early (0.1) and not on
-//! crates.io yet.
+//! which builds on this one and re-exports it. It is early (0.1); add it with
+//! `cargo add terminal_graphics_interactive`.
 //!
 //! # Terminals
 //!
