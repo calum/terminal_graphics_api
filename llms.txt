@@ -13,7 +13,8 @@ It draws into an in-memory grid of cells (one character plus a foreground and a 
 ## Do not use it when
 
 - You need images in the terminal (Kitty, Sixel, iTerm2 protocols). This crate is cell based, not pixel based.
-- You need widgets, layout, text input or mouse and keyboard events. Use a TUI framework for that.
+- You need keyboard or mouse input. Use the companion crate `terminal_graphics_interactive` (see below), which builds on this one.
+- You need widgets, layout or text boxes. Use a TUI framework for that.
 - You need 24-bit colour. It has the 16 ANSI colours, and `Colour::from_rgb` picks the nearest one.
 
 ## Core types
@@ -52,6 +53,14 @@ fn main() -> std::io::Result<()> {
 ```
 
 Call `display.reserve_space()` once before the first frame; each frame moves the cursor up over the previous one.
+
+## Keyboard and mouse input
+
+This crate only draws. For key presses, mouse clicks, drags and scrolling, use the companion crate `terminal_graphics_interactive`: it re-exports everything here, so one dependency and `use terminal_graphics_interactive::prelude::*;` is enough. It is early (0.1) and not yet on crates.io, so use it from git:
+
+    terminal_graphics_interactive = { git = "https://github.com/calum/terminal_graphics_interactive" }
+
+It works in Windows PowerShell, Windows Terminal, Linux and macOS terminals, and over SSH. See https://github.com/calum/terminal_graphics_interactive for its own `llms.txt`.
 
 ## Links
 
